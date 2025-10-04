@@ -1,0 +1,140 @@
+import { AppBar, Box, Button, Toolbar, useMediaQuery, useTheme } from "@mui/material";
+import logo from "../images/logo.png";
+import DropBox from "./dropbox";
+import React from "react";
+
+const Header: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  //Drawer control
+  const [drawerOpen, serDrawerOpen] = React.useState(false);
+  const toggleDrawer = (open: boolean) => () => serDrawerOpen(open);
+
+  const phuongPhapHocItems = [
+    { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/" },
+    { label: "Tư duy PAW – IELTS Writing", value: "about", link: "/about" },
+    {
+      label: "Tư duy SWITCH – IELTS Speaking",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "SR & AR – phương pháp độc quyền",
+      value: "contact",
+      link: "/contact",
+    },
+  ];
+
+  const khoaHocItems = [
+    { label: "Tổng quan khóa học", value: "home", link: "/" },
+    { label: "Pre – IELTS (IELTS 4.5)", value: "about", link: "/about" },
+    {
+      label: "IELTS Reading & Listening",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "IELTS Writing & Speaking",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Các khóa học IELTS miễn phí",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "IELTS Advanced 7.0+",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "IELTS cấp tốc",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Nền tảng – Tiếng Anh Giao Tiếp",
+      value: "contact",
+      link: "/contact",
+    },
+  ];
+
+  const blogItems = [
+    {
+      label: "Tự học IELTS",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Về IELTS",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Bài mẫu Writing",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Tin tức",
+      value: "contact",
+      link: "/contact",
+    },
+  ];
+
+  const aboutUsItems = [
+    {
+      label: "Về chúng tôi",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Kết quả học viên",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Tài liệu học IELTS miễn phí",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Workshop",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Lộ trình tự học IELTS",
+      value: "contact",
+      link: "/contact",
+    },
+    {
+      label: "Quyền lợi học viên IPU",
+      value: "contact",
+      link: "/contact",
+    },
+  ];
+  return (
+    <AppBar position="static" color="inherit" elevation={0}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
+        {/* Logo */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <img src={logo} alt="logo" style={{ height: 60, marginTop: 10}} />
+        </Box>
+
+        {/* Menu desktop*/}
+        {!isMobile}
+        <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
+          <DropBox label={"Phương pháp học"} items={phuongPhapHocItems}></DropBox>
+          <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+          <Button sx={{fontWeight: "bold"}} color="error" onClick={() => {}}>Lịch khai giảng</Button>
+          <DropBox label={"Blog"} items={blogItems}></DropBox>
+          <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
+};
+export default Header;
