@@ -7,7 +7,7 @@ function AppRoutes() {
     <div>
       <Routes>
         <Route element={<MainLayout/>}>
-        <Route path="/" element={<HomePage/>}></Route>
+          <Route path="/" element={<HomePage/>}></Route>
         </Route>
       </Routes>
     </div>
