@@ -33,13 +33,25 @@ const DropBox: React.FC<SelectProps> = ({ label, items }) => {
     navigate(link);
   };
 
+  const dropboxProps = {
+    fontWeight: "bold", 
+    textTransform: "uppercase",
+    borderRadius: 0,
+    ":hover": {
+      borderBottom: 2,
+      borderBottomColor:"rgba(26, 29, 175, 1)",
+      color: "rgba(26, 29, 175, 1)",
+      backgroundColor: "transparent"
+    }
+  };
+
   return (
     <>
       <Button
         color="error"
         onClick={handleClick}
         endIcon={<ArrowDropDownIcon />}
-        sx={{ fontWeight: "bold", textTransform: "uppercase" }}
+        sx={dropboxProps}
       >
         {label}
       </Button>
@@ -64,10 +76,10 @@ const DropBox: React.FC<SelectProps> = ({ label, items }) => {
             key={item.value}
             onClick={() => handleSelect(item.link)}
             sx={{
-              py: 1.2, 
-              px: 2, 
+              py: 1.2,
+              px: 2,
               "&:not(:last-child)": {
-                mb: 0.5, 
+                mb: 0.5,
               },
               ":hover": {
                 color: "red",

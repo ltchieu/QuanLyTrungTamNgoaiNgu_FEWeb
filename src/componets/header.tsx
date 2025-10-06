@@ -1,7 +1,17 @@
-import { AppBar, Box, Button, Toolbar, useMediaQuery, useTheme } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Button,
+  Drawer,
+  IconButton,
+  Toolbar,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import logo from "../images/logo.png";
 import DropBox from "./dropbox";
 import React from "react";
+import MenuIcon from '@mui/icons-material/Menu';
 
 const Header: React.FC = () => {
   const theme = useTheme();
@@ -116,23 +126,85 @@ const Header: React.FC = () => {
       link: "/contact",
     },
   ];
+
+  const dropboxProps = {
+    fontWeight: "bold", 
+    textTransform: "uppercase",
+    borderRadius: 0,
+    ":hover": {
+      borderBottom: 2,
+      borderBottomColor:"rgba(26, 29, 175, 1)",
+      color: "rgba(26, 29, 175, 1)",
+      backgroundColor: "transparent"
+    }
+  };
+
   return (
     <AppBar position="static" color="inherit" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <img src={logo} alt="logo" style={{ height: 60, marginTop: 10}} />
+          <img src={logo} alt="logo" style={{ height: 60, marginTop: 10 }} />
         </Box>
 
         {/* Menu desktop*/}
-        {!isMobile}
-        <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
-          <DropBox label={"Phương pháp học"} items={phuongPhapHocItems}></DropBox>
-          <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
-          <Button sx={{fontWeight: "bold"}} color="error" onClick={() => {}}>Lịch khai giảng</Button>
-          <DropBox label={"Blog"} items={blogItems}></DropBox>
-          <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
-        </Box>
+        {!isMobile && (
+          <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
+            <DropBox
+              label={"Phương pháp học"}
+              items={phuongPhapHocItems}
+            ></DropBox>
+            <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+            <Button
+              sx={dropboxProps}
+              color="error"
+              onClick={() => {}}
+            >
+              Lịch khai giảng
+            </Button>
+            <DropBox label={"Blog"} items={blogItems}></DropBox>
+            <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
+          </Box>
+        )}
+
+        {/* Menu Mobile */}
+        {isMobile && (
+          <>
+          <IconButton onClick={toggleDrawer(true)} color="error">
+              <MenuIcon/>
+          </IconButton>
+            <Drawer
+              anchor="right"
+              open={drawerOpen}
+              onClose={toggleDrawer(false)}
+            >
+              <Box
+                sx={{
+                  width: 250,
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <DropBox
+              label={"Phương pháp học"}
+              items={phuongPhapHocItems}
+            ></DropBox>
+            <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+            <Button
+              sx={{ fontWeight: "bold" }}
+              color="error"
+              onClick={() => {}}
+            >
+              Lịch khai giảng
+            </Button>
+            <DropBox label={"Blog"} items={blogItems}></DropBox>
+            <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>           
+              </Box>
+            </Drawer>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );
