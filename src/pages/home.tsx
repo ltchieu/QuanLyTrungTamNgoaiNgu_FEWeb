@@ -42,8 +42,6 @@ function HomePage() {
     },
   };
 
-
-
   return (
     <>
       <Box {...rowContainterProps} sx={{ gap: 2 }}>
@@ -208,12 +206,13 @@ function HomePage() {
         {/* Dòng 1 */}
         <Box
           sx={{
-            width: "65%",
+            width: "64%",
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             alignItems: "center",
             justifyContent: "space-between",
             gap: 7,
+            ml: 6
           }}
         >
           {/* Cột bên trái (chữ) */}
@@ -259,13 +258,11 @@ function HomePage() {
               alignItems: "center",
             }}
           >
-            <img src={ipuPtr} alt="IELTS Power Up" style={{ width: "50%" }} />
+            <img src={ipuPtr} alt="IELTS Power Up" style={{ width: "56%" }} />
           </Box>
         </Box>
 
-        <Box {...rowContainterProps} sx={{ gap: 6, mb: 6 }}>
-          <WhyChooseUs/>
-        </Box>
+        <WhyChooseUs />
       </Box>
     </>
   );

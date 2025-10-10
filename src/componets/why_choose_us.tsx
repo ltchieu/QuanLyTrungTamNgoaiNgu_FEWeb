@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUserGear,
-  faChalkboardTeacher,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import riskPtr from "../images/risk-150x150.png";
+import team_workPtr from "../images/team-work-150x150.png";
+import bussiness_proposalPtr from "../images/business-proposal-150x150.png";
+import processPtr from "../images/process-150x150.png";
+import insurancePtr from "../images/insurance-150x150.png";
+import customer_reviewPtr from "../images/customer-review-150x150.png";
 
 const WhyChooseUs: React.FC = () => {
   // Trạng thái lưu nút được chọn
@@ -13,42 +14,47 @@ const WhyChooseUs: React.FC = () => {
 
   // Nội dung tương ứng với từng nút
   const content = {
-    brand: [
+    quality: [
       {
-        icon: faUserGear,
-        title: "Hơn 20.000 học viên đã học tại Simple",
+        icon: processPtr,
+        title1: "Hơn 20.000 học viên",
+        title2: "đã học tại Simple",
         text: "Trong suốt 10 năm hoạt động, Hệ thống Anh ngữ Toàn diện Simple đã giúp cho hơn 20.000 học viên yêu thích tiếng Anh và đạt được mục tiêu của mình.",
       },
       {
-        icon: faChalkboardTeacher,
-        title: "Nơi đào tạo hơn 4.500 giáo viên",
-        text: "Tính đến nay, Simple đã đào tạo hơn 4.500 giáo viên tiếng Anh cho các trường phổ thông và trung tâm trên toàn quốc.",
+        icon: insurancePtr,
+        title1: "Nơi đào tạo",
+        title2: "hơn 4.500 giáo viên",
+        text: "Tính đến nay, Hệ thống Anh ngữ Toàn diện Simple đã đào tạo được hơn 4.500 giáo viên tiếng Anh cho các trường phổ thông, các trung tâm anh ngữ lớn nhỏ trên toàn quốc.",
       },
       {
-        icon: faChalkboardTeacher,
-        title: "Nơi đào tạo hơn 4.500 giáo viên",
-        text: "Tính đến nay, Simple đã đào tạo hơn 4.500 giáo viên tiếng Anh cho các trường phổ thông và trung tâm trên toàn quốc.",
+        icon: customer_reviewPtr,
+        title1: "Phương pháp học",
+        title2: "hiện đại - mới mẻ",
+        text: "Hệ thống Anh ngữ Toàn diện Simple cũng là nơi tổ chức và nghiên cứu các phương pháp học để giúp cho người Việt Nam có thể hấp thu tiếng Anh một cách toàn diện và hoàn hảo nhất.",
       },
     ],
-    quality: [
+    brand: [
       {
-        icon: faMagnifyingGlass,
-        title: "Phương pháp học hiện đại – mới mẻ",
-        text: "Simple không chỉ giảng dạy mà còn nghiên cứu các phương pháp học giúp người Việt hấp thụ tiếng Anh toàn diện và hiệu quả.",
+        icon: riskPtr,
+        title1: "Hơn 10 năm",
+        title2: "kinh nghiệm",
+        text: "IELTS Power Up thuộc Hệ thống Anh ngữ Toàn diện Simple, nơi đã có hơn 10 năm kinh nghiệm giảng dạy tiếng Anh cho mọi lứa tuổi.",
       },
       {
-        icon: faUserGear,
-        title: "Chương trình học đạt chuẩn quốc tế",
-        text: "Các khóa học của Simple được thiết kế dựa trên khung CEFR và IELTS, đảm bảo học viên có thể ứng dụng thực tế.",
+        icon: team_workPtr,
+        title1: "Đối tác của",
+        title2: "các trường Đại học",
+        text: "Hệ thống Anh ngữ Toàn diện Simple đang là đối tác chiến lược của các trường Đại học lớn trên toàn quốc như là: Đại học Kinh tế TP.HCM, Đại học Văn Lang, Melbourne Polytechnic, Đại học Tôn Đức Thắng,….",
       },
       {
-        icon: faUserGear,
-        title: "Chương trình học đạt chuẩn quốc tế",
-        text: "Các khóa học của Simple được thiết kế dựa trên khung CEFR và IELTS, đảm bảo học viên có thể ứng dụng thực tế.",
+        icon: bussiness_proposalPtr,
+        title1: "Hơn 98% học viên",
+        title2: "đạt target",
+        text: "Hơn 98% học viên học tại IPU đạt target khi tham gia khóa học tại IPU. Đặc biệt 100% học viên đạt target khi đăng ký lộ trình học IELTS tại IPU.",
       },
     ],
   };
-
 
   return (
     <Box
@@ -65,7 +71,7 @@ const WhyChooseUs: React.FC = () => {
         sx={{
           display: "flex",
           justifyContent: "center",
-          gap: 4,
+          gap: 10,
           mb: 4,
           flexWrap: "wrap",
         }}
@@ -118,7 +124,7 @@ const WhyChooseUs: React.FC = () => {
         sx={{
           display: "flex",
           justifyContent: "center",
-          gap: 6,
+          gap: 5,
           flexWrap: "wrap",
           width: "90%",
           textAlign: "left",
@@ -131,23 +137,21 @@ const WhyChooseUs: React.FC = () => {
               flex: 1,
               minWidth: 280,
               maxWidth: 400,
-              textAlign: "center",
+              textAlign: "left",
             }}
           >
-            <FontAwesomeIcon
-              icon={item.icon}
-              size="3x"
-              style={{ marginBottom: 16, color: "black" }}
+            <img
+              src={item.icon}
+              style={{ marginBottom: 16, color: "black", width: "20%" }}
             />
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              {item.title.split("đã")[0]}
-              <span style={{ color: "#FF4500" }}>
-                {item.title.split("đã")[1]
-                  ? "đã" + item.title.split("đã")[1]
-                  : ""}
-              </span>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", fontSize: "19px" }}
+            >
+              {item.title1}{" "}
+              <span style={{ color: "#FF4500" }}>{item.title2}</span>
             </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
+            <Typography variant="body2" sx={{ mt: 1, color: "#4d4d4d" }}>
               {item.text}
             </Typography>
           </Box>

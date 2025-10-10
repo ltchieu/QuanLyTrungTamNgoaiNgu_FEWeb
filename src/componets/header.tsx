@@ -22,7 +22,7 @@ const Header: React.FC = () => {
   const toggleDrawer = (open: boolean) => () => serDrawerOpen(open);
 
   const phuongPhapHocItems = [
-    { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/" },
+    { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/about" },
     { label: "Tư duy PAW – IELTS Writing", value: "about", link: "/about" },
     {
       label: "Tư duy SWITCH – IELTS Speaking",
@@ -131,6 +131,8 @@ const Header: React.FC = () => {
     fontWeight: "bold", 
     textTransform: "uppercase",
     borderRadius: 0,
+    fontSize: 18,
+    color:"rgba(230, 62, 20, 1)",
     ":hover": {
       borderBottom: 2,
       borderBottomColor:"rgba(26, 29, 175, 1)",
@@ -140,7 +142,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar position="static" color="inherit" elevation={0}>
+    <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -157,7 +159,7 @@ const Header: React.FC = () => {
             <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
             <Button
               sx={dropboxProps}
-              color="error"
+              
               onClick={() => {}}
             >
               Lịch khai giảng
@@ -193,8 +195,7 @@ const Header: React.FC = () => {
             ></DropBox>
             <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
             <Button
-              sx={{ fontWeight: "bold" }}
-              color="error"
+              sx={dropboxProps}
               onClick={() => {}}
             >
               Lịch khai giảng

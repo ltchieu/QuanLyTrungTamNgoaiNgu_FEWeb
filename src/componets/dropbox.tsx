@@ -1,9 +1,6 @@
-import React from "react";
-import MenuItem from "@mui/material/MenuItem";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "@mui/material/Button";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import Menu from "@mui/material/Menu";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 type SelectItem = {
   label: string;
@@ -17,82 +14,95 @@ interface SelectProps {
 }
 
 const DropBox: React.FC<SelectProps> = ({ label, items }) => {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleMouseEnter = () => setIsOpen(true);
+  const handleMouseLeave = () => setIsOpen(false);
+
+  const handleClick = () => {
+    if (items.length > 0) navigate(items[0].link);
   };
 
   const handleSelect = (link: string) => {
-    handleClose();
     navigate(link);
-  };
-
-  const dropboxProps = {
-    fontWeight: "bold", 
-    textTransform: "uppercase",
-    borderRadius: 0,
-    ":hover": {
-      borderBottom: 2,
-      borderBottomColor:"rgba(26, 29, 175, 1)",
-      color: "rgba(26, 29, 175, 1)",
-      backgroundColor: "transparent"
-    }
+    setIsOpen(false);
   };
 
   return (
-    <>
-      <Button
-        color="error"
+    <nav
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        position: "relative",
+        display: "inline-block",
+      }}
+    >
+      {/* Nút chính */}
+      <div
         onClick={handleClick}
-        endIcon={<ArrowDropDownIcon />}
-        sx={dropboxProps}
-      >
-        {label}
-      </Button>
-
-      <Menu
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{
-          sx: {
-            borderRadius: 5,
-            paddingLeft: 3,
-            paddingRight: 3,
-            gap: 5,
-          },
+        style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+          fontWeight: "bold",
+          textTransform: "uppercase",
+          fontSize: "18px",
+          padding: "10px 15px",
+          cursor: "pointer",
+          borderBottom: isOpen ? "2px solid rgba(26,29,175,1)" : "2px solid transparent",
+          color: isOpen ? "rgba(26,29,175,1)" : "rgba(230, 62, 20, 1)",
+          transition: "all 0.2s ease",
         }}
       >
-        {items.map((item) => (
-          <MenuItem
-            key={item.value}
-            onClick={() => handleSelect(item.link)}
-            sx={{
-              py: 1.2,
-              px: 2,
-              "&:not(:last-child)": {
-                mb: 0.5,
-              },
-              ":hover": {
-                color: "red",
-                backgroundColor: "transparent",
-                borderRadius: 60,
-              },
-            }}
-          >
-            {item.label}
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
+        {label}<span><KeyboardArrowDownIcon/></span>
+      </div>
+
+      {/* Danh sách con */}
+      {isOpen && (
+        <ul
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            backgroundColor: "white",
+            listStyle: "none",
+            padding: "10px 0",
+            margin: 0,
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+            zIndex: 999,
+            minWidth: "200px",
+          }}
+        >
+          {items.map((item) => (
+            <li
+              key={item.value}
+              onClick={() => handleSelect(item.link)}
+              style={{
+                padding: "10px 20px",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                textAlign: "left"
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.backgroundColor = "rgba(26,29,175,0.05)";
+                (e.target as HTMLElement).style.color = "rgba(235, 55, 10, 1)";
+                (e.target as HTMLElement).style.paddingLeft = "25px";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.backgroundColor = "transparent";
+                (e.target as HTMLElement).style.color = "black";
+                (e.target as HTMLElement).style.paddingLeft = "20px";
+              }}
+            >
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </nav>
   );
 };
+
 export default DropBox;
