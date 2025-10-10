@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import StudentFeedback from "../componets/student_feedback";
 import WhyChooseUs from "../componets/why_choose_us";
+import Banner from "../componets/banner";
 
 function HomePage() {
   const rowContainterProps: BoxProps = {
@@ -44,18 +45,29 @@ function HomePage() {
 
   return (
     <>
-      <Box {...rowContainterProps} sx={{ gap: 2 }}>
+      <Banner />
+      <Box {...rowContainterProps} sx={{ gap: 2, mt: 6 }}>
         <Typography
           variant="h3"
           gutterBottom
-          sx={{ fontWeight: "bold", marginBottom: 2 }}
+          sx={{
+            fontWeight: 800,
+            marginBottom: 2,
+            fontFamily: "'Barlow', Sans-serif",
+          }}
         >
           Các khóa học
         </Typography>
+        
         <Typography
           variant="h3"
           gutterBottom
-          sx={{ fontWeight: "bold", color: "orangered", marginBottom: 2 }}
+          sx={{
+            fontWeight: 800,
+            color: "orangered",
+            marginBottom: 2,
+            fontFamily: "'Barlow', Sans-serif",
+          }}
         >
           luyện thi IELTS
         </Typography>
@@ -212,7 +224,7 @@ function HomePage() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 7,
-            ml: 6
+            ml: 6,
           }}
         >
           {/* Cột bên trái (chữ) */}

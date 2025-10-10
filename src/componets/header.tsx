@@ -145,7 +145,7 @@ const Header: React.FC = () => {
     <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <img src={logo} alt="logo" style={{ height: 60, marginTop: 10 }} />
         </Box>
 

@@ -91,6 +91,7 @@ const StudentFeedback: React.FC = () => {
                 display: "flex",
                 flexDirection: "column",
                 backgroundColor: "#fafafa",
+                maxHeight: 260
               }}
               elevation={0}
             >
