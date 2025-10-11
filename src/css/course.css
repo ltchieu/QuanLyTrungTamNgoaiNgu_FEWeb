@@ -1,0 +1,15 @@
+.list-condition li {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding-bottom: 10px;
+  margin-top: 10px;
+}
+
+.list-condition li:last-child {
+  padding-bottom: 0;
+}
+
+.list-condition li:first-child {
+  margin-top: 0;
+}

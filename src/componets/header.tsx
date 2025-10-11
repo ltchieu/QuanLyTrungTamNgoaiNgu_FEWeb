@@ -37,7 +37,7 @@ const Header: React.FC = () => {
   ];
 
   const khoaHocItems = [
-    { label: "Tổng quan khóa học", value: "home", link: "/" },
+    { label: "Tổng quan khóa học", value: "home", link: "/course" },
     { label: "Pre – IELTS (IELTS 4.5)", value: "about", link: "/about" },
     {
       label: "IELTS Reading & Listening",
@@ -146,7 +146,7 @@ const Header: React.FC = () => {
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <img src={logo} alt="logo" style={{ height: 60, marginTop: 10 }} />
+          <a href="#"><img src={logo} alt="logo" style={{ height: 60, marginTop: 10, }} /></a>
         </Box>
 
         {/* Menu desktop*/}

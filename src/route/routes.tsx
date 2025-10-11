@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import MainLayout from "../layouts/main_layout";
 import HomePage from "../pages/home";
+import Course from "../pages/course";
 
 function AppRoutes() {
   return (
@@ -8,6 +9,7 @@ function AppRoutes() {
       <Routes>
         <Route element={<MainLayout/>}>
           <Route path="/" element={<HomePage/>}></Route>
+          <Route path="/course" element={<Course/>}></Route>
         </Route>
       </Routes>
     </div>
