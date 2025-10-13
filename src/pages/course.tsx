@@ -2,11 +2,13 @@ import "../css/course.css";
 import {
   faCircleCheck,
   faCircleExclamation,
+  faPlus,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, BoxProps, Typography } from "@mui/material";
+import { Box, BoxProps, Button, Typography } from "@mui/material";
 import { CSSProperties } from "react";
+import CourseModuleDetails from "../componets/course_content_detail";
 
 function Course() {
   const rowContainterProps: BoxProps = {
@@ -384,7 +386,24 @@ function Course() {
             </Box>
           </Box>
 
+          {/* Nội dung khóa học*/}
+          <Box sx={{ textAlign: "left", mt: 7, mb: 3 }}>
+            <Typography variant="h5" sx={{ fontSize: 25, fontWeight: "bold" }}>
+              Nội dung chương trình học
+            </Typography>
 
+            <Typography
+              variant="body1"
+              sx={{ mt: 2, color: "rgb(44 43 43 / 78%)" }}
+            >
+              <span>14 </span> tuần – <span>42 </span> buổi học –{" "}
+              <span>63</span>h giờ học trên lớp
+            </Typography>
+          </Box>
+
+          <Box>
+           <CourseModuleDetails/>
+          </Box>
         </Box>
 
         {/* Second column */}
