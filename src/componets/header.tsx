@@ -146,7 +146,7 @@ const Header: React.FC = () => {
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <a href="#"><img src={logo} alt="logo" style={{ height: 60, marginTop: 10, }} /></a>
+          <a href="/"><img src={logo} alt="logo" style={{ height: 60, marginTop: 10, }} /></a>
         </Box>
 
         {/* Menu desktop*/}
