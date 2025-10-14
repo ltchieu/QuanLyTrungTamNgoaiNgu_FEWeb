@@ -11,9 +11,41 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, BoxProps, Button, Typography } from "@mui/material";
 import { CSSProperties } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
+import CourseCard from "../componets/course_card";
 
 function Course() {
   const linkYoutube = "https://www.youtube.com/embed/";
+
+  // DỮ liệu mẫu
+  const coursesData = [
+    {
+      imageSrc: thumnailCourse1,
+      title: "IELTS Writing Foundation",
+      summaryItems: [
+        "Xây dựng nền tảng ngữ pháp",
+        "Học cách viết câu phức",
+        "Phân tích đề bài Task 2",
+      ],
+    },
+    {
+      imageSrc: thumnailCourse2,
+      title: "IELTS Speaking Intensive",
+      summaryItems: [
+        "Luyện phát âm chuẩn IPA",
+        "Chiến thuật trả lời Part 1, 2, 3",
+        "Tăng cường vốn từ vựng học thuật",
+      ],
+    },
+    {
+      imageSrc: thumnailCourse3,
+      title: "Khóa Luyện đề Tổng hợp",
+      summaryItems: [
+        "Thực hành 4 kỹ năng",
+        "Giải đề thi thật các năm",
+        "Mẹo quản lý thời gian hiệu quả",
+      ],
+    },
+  ];
 
   const rowContainterProps: BoxProps = {
     display: "flex",
@@ -26,20 +58,6 @@ function Course() {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-  };
-
-  const introduceCourseContainerStyle: CSSProperties = {
-    boxShadow: "0px 0px 5px 0px rgba(0, 0, 0, 0.5)",
-    borderRadius: "30px",
-    width: "30.33%",
-    margin: "25px"
-  };
-
-  const thumbnailStyle: CSSProperties = {
-    borderRadius: "26px",
-    display: "inline-block",
-    width: "100%",
-    height: "auto",
   };
 
   const headerTextStyle = {
@@ -506,32 +524,14 @@ function Course() {
 
       {/* Introduce more course */}
       <Box {...rowContainterProps} sx={{ maxWidth: "1140px", margin: "auto" }}>
-        <Box
-          {...columnContainterProps}
-          sx={{ ...introduceCourseContainerStyle }}
-        >
-          <Box sx={{padding: "10px" }}>
-            <img src={thumnailCourse1} style={{ ...thumbnailStyle }} />
-          </Box>
-        </Box>
-
-        <Box
-          {...columnContainterProps}
-          sx={{ ...introduceCourseContainerStyle }}
-        >
-          <Box sx={{padding: "10px" }}>
-            <img src={thumnailCourse1} style={{ ...thumbnailStyle }} />
-          </Box>
-        </Box>
-
-        <Box
-          {...columnContainterProps}
-          sx={{ ...introduceCourseContainerStyle }}
-        >
-          <Box sx={{padding: "10px" }}>
-            <img src={thumnailCourse1} style={{ ...thumbnailStyle }} />
-          </Box>
-        </Box>
+        {coursesData.map((course) => (
+          <CourseCard
+            key={course.title}
+            imageSrc={course.imageSrc}
+            title={course.title}
+            summaryItems={course.summaryItems}
+          />
+        ))}
       </Box>
     </>
   );
