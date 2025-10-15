@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import riskPtr from "../images/risk-150x150.png";
@@ -56,6 +56,16 @@ const WhyChooseUs: React.FC = () => {
     ],
   };
 
+  const buttonStyle = {
+    color: "white",
+    width: { xs: 170, md: 580 },
+    height: 50,
+    borderRadius: 3,
+    textTransform: "capitalize",
+    fontWeight: "bold",
+    transition: "all 0.3s ease",
+  };
+
   return (
     <Box
       sx={{
@@ -71,7 +81,8 @@ const WhyChooseUs: React.FC = () => {
         sx={{
           display: "flex",
           justifyContent: "center",
-          gap: 10,
+          flexDirection: "row",
+          gap: { xs: 2, md: 10 },
           mb: 4,
           flexWrap: "wrap",
         }}
@@ -79,15 +90,9 @@ const WhyChooseUs: React.FC = () => {
         <Button
           onClick={() => setSelected("brand")}
           sx={{
+            ...buttonStyle,
             backgroundColor:
               selected === "brand" ? "#FF4500" : "rgba(27, 12, 112, 1)",
-            color: "white",
-            width: 580,
-            height: 50,
-            borderRadius: 3,
-            textTransform: "capitalize",
-            fontWeight: "bold",
-            transition: "all 0.3s ease",
             ":hover": {
               backgroundColor:
                 selected === "brand" ? "#e03e00" : "rgba(27, 12, 112, 0.85)",
@@ -100,15 +105,10 @@ const WhyChooseUs: React.FC = () => {
         <Button
           onClick={() => setSelected("quality")}
           sx={{
+            ...buttonStyle,
             backgroundColor:
               selected === "quality" ? "#FF4500" : "rgba(27, 12, 112, 1)",
-            color: "white",
-            width: 580,
-            height: 50,
-            borderRadius: 3,
-            textTransform: "capitalize",
-            fontWeight: "bold",
-            transition: "all 0.3s ease",
+
             ":hover": {
               backgroundColor:
                 selected === "quality" ? "#e03e00" : "rgba(27, 12, 112, 0.85)",

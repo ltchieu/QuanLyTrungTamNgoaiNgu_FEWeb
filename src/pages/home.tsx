@@ -10,6 +10,7 @@ import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import StudentFeedback from "../componets/student_feedback";
 import WhyChooseUs from "../componets/why_choose_us";
 import Banner from "../componets/banner";
+import IntroduceTeacher from "../componets/introduceTeacher";
 
 function HomePage() {
   const rowContainterProps: BoxProps = {
@@ -43,6 +44,11 @@ function HomePage() {
     },
   };
 
+  const courseColumnContainerResponsiveStyle = {
+    flex: { xs: "1 1 45%", md: "1 1 0" },
+    alignItems: "center",
+  };
+
   return (
     <>
       <Banner />
@@ -58,7 +64,7 @@ function HomePage() {
         >
           Các khóa học
         </Typography>
-        
+
         <Typography
           variant="h3"
           gutterBottom
@@ -86,17 +92,26 @@ function HomePage() {
 
       <Box
         {...rowContainterProps}
-        sx={{ marginTop: 8, marginBottom: 5, gap: 7 }}
+        sx={{
+          marginTop: 8,
+          marginBottom: 5,
+          gap: 7,
+          // flexDirection: { xs: "column", md: "row" },
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
       >
-        <Box {...columnContainterProps}>
+        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
           <img src={languagePtr} alt="languege" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Nền tảng</Button>
         </Box>
-        <Box {...columnContainterProps}>
+
+        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
           <img src={notebookPtr} alt="notebook" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Pre-IELTS</Button>
         </Box>
-        <Box {...columnContainterProps}>
+
+        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
           <img
             src={onlineLearningPtr}
             alt="onlineLearning"
@@ -104,7 +119,8 @@ function HomePage() {
           />
           <Button sx={couresButtonStyle}>Reading & Listening</Button>
         </Box>
-        <Box {...columnContainterProps}>
+
+        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
           <img
             src={conversationPtr}
             alt="conversation"
@@ -112,7 +128,8 @@ function HomePage() {
           />
           <Button sx={couresButtonStyle}>Writing & Speaking</Button>
         </Box>
-        <Box {...columnContainterProps}>
+
+        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
           <img src={groupPtr} alt="group" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Advanced 7.0+</Button>
         </Box>
@@ -145,10 +162,11 @@ function HomePage() {
               "linear-gradient(90deg, #da4a15ff 25%, #9b362bff 40%, #0A2342 100%)",
             margin: "auto",
             marginBottom: 6,
-            width: "60%",
+            width: { xs: "80%", md: "60%" },
             display: "flex",
-            flexDirection: "row",
+            flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-around",
+            alignItems: { xs: "center" },
             borderRadius: 2,
           }}
         >
@@ -191,6 +209,7 @@ function HomePage() {
                 borderRadius: 2,
                 textTransform: "capitalize",
                 transition: "all 0.3s ease",
+                mb: { xs: 3 },
                 ":hover": {
                   transform: "scale(0.9)",
                 },
@@ -218,13 +237,13 @@ function HomePage() {
         {/* Dòng 1 */}
         <Box
           sx={{
-            width: "64%",
+            width: { xs: "80%", md: "64%" },
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             alignItems: "center",
             justifyContent: "space-between",
             gap: 7,
-            ml: 6,
+            ml: { xs: 0, md: 6 },
           }}
         >
           {/* Cột bên trái (chữ) */}
@@ -239,14 +258,24 @@ function HomePage() {
             <Typography
               variant="h3"
               gutterBottom
-              sx={{ fontWeight: "bold", marginBottom: 2, textAlign: "left" }}
+              sx={{
+                fontWeight: "bold",
+                marginBottom: 2,
+                textAlign: "left",
+                fontSize: { xs: "36px" },
+              }}
             >
               Vì sao bạn nên chọn{" "}
               <Typography
                 variant="h3"
                 component="span"
                 gutterBottom
-                sx={{ fontWeight: "bold", color: "orangered", marginBottom: 2 }}
+                sx={{
+                  fontWeight: "bold",
+                  color: "orangered",
+                  marginBottom: 2,
+                  fontSize: { xs: "36px" },
+                }}
               >
                 IELTS Power Up
               </Typography>
@@ -265,7 +294,7 @@ function HomePage() {
           {/* Cột bên phải (hình ảnh) */}
           <Box
             sx={{
-              display: "flex",
+              display: { xs: "none", md: "flex" },
               justifyContent: "center",
               alignItems: "center",
             }}
@@ -275,6 +304,8 @@ function HomePage() {
         </Box>
 
         <WhyChooseUs />
+
+        <IntroduceTeacher />
       </Box>
     </>
   );
