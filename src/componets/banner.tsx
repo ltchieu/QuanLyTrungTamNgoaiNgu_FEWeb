@@ -19,6 +19,8 @@ function Banner() {
   const headerTextStyle = {
     fontWeight: 800,
     fontFamily: "'Barlow', Sans-serif",
+    textAlign: { xs: "center", md: "left" },
+    fontSize: { xs: "40px" },
   };
 
   return (
@@ -26,7 +28,7 @@ function Banner() {
       {/* Cột 1 (chữ) */}
       <Box {...columnContainterProps} sx={{ maxWidth: 700, mb: 10 }}>
         <Box sx={{ textAlign: "left", mt: 10 }}>
-          <Typography variant="h3" sx={{...headerTextStyle}}>
+          <Typography variant="h3" sx={{ ...headerTextStyle }}>
             Your Expert Guide to
           </Typography>
 
@@ -41,8 +43,8 @@ function Banner() {
           </Typography>
         </Box>
 
-        <Box sx={{ textAlign: "left", mt: 10 }}>
-          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+        <Box sx={{ textAlign: {xs: "center", md: "left"}, mt: 10, mb: {xs: 6, md: 0}}}>
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, fontSize: {xs: 27}}}>
             Trung tâm luyện thi IELTS tại TP.HCM
           </Typography>
 
@@ -67,6 +69,7 @@ function Banner() {
             borderRadius: 2,
             padding: 1.3,
             mt: 6,
+            ml: {xs: 14, md: 0},
             ":hover": {
               backgroundColor: "#003E83",
             },
@@ -77,7 +80,7 @@ function Banner() {
       </Box>
 
       {/* Cột 2 (hình ảnh) */}
-      <Box sx={{ mt: 7, mb: 7 }}>
+      <Box sx={{ mt: 7, mb: 7, display: { xs: "none", md: "block" } }}>
         <img src={ptr} alt="" />
       </Box>
     </Box>

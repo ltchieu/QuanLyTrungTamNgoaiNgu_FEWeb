@@ -24,15 +24,16 @@ function Footer() {
     gap: 2,
     marginTop: 2,
     marginBottom: 2,
+    fontSize: { xs: 16, md: 20 },
   };
 
   const copyrightLinkContainterProps = {
     display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: {xs: "column", md: "row"},
+    alignItems: {xs: "flex-start", md: "center"},
     alignContent: "center",
     gap: 5,
-    marginTop: 2,
+    marginTop: {xs: 0, md: 2},
     marginBottom: 2,
   };
 
@@ -56,7 +57,6 @@ function Footer() {
 
   const copyrightContentProps = {
     color: "white",
-    fontSize: 20,
     margin: 0,
   };
 
@@ -75,16 +75,26 @@ function Footer() {
       color: "rgba(146, 47, 16, 1)",
     },
   };
+  
   return (
     <Box sx={{ backgroundColor: "#182564ff" }} position="static">
       <Grid container>
         <Grid size={5}>
-          <img src={logo} alt="logo" style={{ width: 200, marginTop: 20 }} />
+          <Box
+            component="img"
+            src={logo}
+            alt="logo"
+            sx={{ width: { xs: 150, md: 200 }, marginTop: "20px" }}
+          />
         </Grid>
         <Grid size={7}></Grid>
       </Grid>
 
-      <Grid container spacing={8} mt={4}>
+      <Grid
+        container
+        spacing={{ xs: 2, md: 8 }}
+        sx={{ mt: { xs: 0, md: 4 }, ml: { xs: "10px", md: 0 }, mr: { xs: "10px", md: 0 } }}
+      >
         <Grid size={{ xs: 12, md: 1.8 }} />
         <Grid size={{ xs: 12, md: 3 }}>
           {/* Văn phòng tư vấn */}
@@ -330,7 +340,7 @@ function Footer() {
         </Grid>
       </Grid>
 
-      <Grid container mt={4}>
+      <Grid container mt={4} sx={{margin: { xs: "32px 10px 0px 10px", md: 0 }}}>
         <Grid size={{ xs: 12, md: 1.8 }} />
         <Grid size={{ xs: 12, md: 8 }}>
           <Divider
@@ -344,7 +354,11 @@ function Footer() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={14}>
+      <Grid
+        container
+        spacing={{ xs: 3, md: 14 }}
+        sx={{ textAlign: "left", ml: { xs: "10px", md: 0 }, mb: {xs: 20, md:0}, mr: { xs: "10px", md: 0 }}}
+      >
         <Grid size={{ xs: 12, md: 1.7 }} />
         <Grid size={{ xs: 12, md: 5 }}>
           {/* Copyright */}
@@ -356,17 +370,15 @@ function Footer() {
           </Box>
 
           <Box sx={containterProps}>
-            <FontAwesomeIcon icon={faCopyright} style={copyrightIconProps}/>
+            <FontAwesomeIcon icon={faCopyright} style={copyrightIconProps} />
             <p style={copyrightContentProps}>
               CÔNG TY TNHH GIÁO DỤC VÀ ĐÀO TẠO SLC
             </p>
           </Box>
 
           <Box sx={containterProps}>
-            <FontAwesomeIcon icon={faAddressCard} style={copyrightIconProps}/>
-            <p style={copyrightContentProps}>
-              MST: 0316272289
-            </p>
+            <FontAwesomeIcon icon={faAddressCard} style={copyrightIconProps} />
+            <p style={copyrightContentProps}>MST: 0316272289</p>
           </Box>
 
           <Box sx={containterProps}>
@@ -378,12 +390,18 @@ function Footer() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-            {/* Links */}
-            <Box sx={copyrightLinkContainterProps}>
-              <Link href="#" sx={copyrightLinkProps} underline="none">Giới thiệu</Link>
-              <Link href="#" sx={copyrightLinkProps} underline="none">Chính sách bảo mật</Link>
-              <Link href="#" sx={copyrightLinkProps} underline="none">Điều khoản sử dụng</Link>
-            </Box>
+          {/* Links */}
+          <Box sx={copyrightLinkContainterProps}>
+            <Link href="#" sx={copyrightLinkProps} underline="none">
+              Giới thiệu
+            </Link>
+            <Link href="#" sx={copyrightLinkProps} underline="none">
+              Chính sách bảo mật
+            </Link>
+            <Link href="#" sx={copyrightLinkProps} underline="none">
+              Điều khoản sử dụng
+            </Link>
+          </Box>
         </Grid>
       </Grid>
     </Box>

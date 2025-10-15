@@ -97,7 +97,7 @@ function Course() {
   return (
     <>
       {/* Course detail */}
-      <Box {...rowContainterProps}>
+      <Box {...rowContainterProps} sx={{flexDirection: {xs: "column", md: "row"}}}>
         {/* First column */}
         <Box
           {...columnContainterProps}

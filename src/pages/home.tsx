@@ -4,7 +4,14 @@ import groupPtr from "../images/group-150x150.png";
 import notebookPtr from "../images/notebook-150x150.png";
 import onlineLearningPtr from "../images/online-learning-150x150.png";
 import ipuPtr from "../images/ipu-300x300.png";
-import { Box, BoxProps, Button, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  BoxProps,
+  Button,
+  Grid,
+  GridProps,
+  Typography,
+} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import StudentFeedback from "../componets/student_feedback";
@@ -44,38 +51,36 @@ function HomePage() {
     },
   };
 
-  const courseColumnContainerResponsiveStyle = {
-    flex: { xs: "1 1 45%", md: "1 1 0" },
-    alignItems: "center",
+  const gridItemProps: GridProps = {
+    size: { xs: 6, md: 1.5 },
+    gap: 2,
+  };
+
+  const courseHeaderStyle = {
+    fontWeight: 800,
+    marginBottom: 2,
+    fontFamily: "'Barlow', Sans-serif",
+    fontSize: { xs: "28px" },
   };
 
   return (
     <>
       <Banner />
-      <Box {...rowContainterProps} sx={{ gap: 2, mt: 6 }}>
-        <Typography
-          variant="h3"
-          gutterBottom
-          sx={{
-            fontWeight: 800,
-            marginBottom: 2,
-            fontFamily: "'Barlow', Sans-serif",
-          }}
-        >
+      <Box sx={{ gap: 2, mt: 6 }}>
+        <Typography variant="h3" gutterBottom sx={{ ...courseHeaderStyle }}>
           Các khóa học
-        </Typography>
-
-        <Typography
-          variant="h3"
-          gutterBottom
-          sx={{
-            fontWeight: 800,
-            color: "orangered",
-            marginBottom: 2,
-            fontFamily: "'Barlow', Sans-serif",
-          }}
-        >
-          luyện thi IELTS
+          <Typography
+            variant="h3"
+            gutterBottom
+            component="span"
+            sx={{
+              ...courseHeaderStyle,
+              color: "orangered",
+            }}
+          >
+            {" "}
+            luyện thi IELTS
+          </Typography>
         </Typography>
       </Box>
 
@@ -90,50 +95,53 @@ function HomePage() {
         </Typography>
       </Box>
 
-      <Box
-        {...rowContainterProps}
+      <Grid
+        container
+        spacing={4} // khoảng cách giữa các cột
         sx={{
           marginTop: 8,
           marginBottom: 5,
-          gap: 7,
-          // flexDirection: { xs: "column", md: "row" },
-          flexWrap: "wrap",
           justifyContent: "center",
         }}
       >
-        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
+        {/* Item 1 */}
+        <Grid {...gridItemProps}>
           <img src={languagePtr} alt="languege" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Nền tảng</Button>
-        </Box>
+        </Grid>
 
-        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
+        {/* Item 2 */}
+        <Grid {...gridItemProps}>
           <img src={notebookPtr} alt="notebook" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Pre-IELTS</Button>
-        </Box>
+        </Grid>
 
-        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
+        {/* Item 3 */}
+        <Grid {...gridItemProps}>
           <img
             src={onlineLearningPtr}
             alt="onlineLearning"
             style={{ width: "50%" }}
           />
           <Button sx={couresButtonStyle}>Reading & Listening</Button>
-        </Box>
+        </Grid>
 
-        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
+        {/* Item 4 */}
+        <Grid {...gridItemProps}>
           <img
             src={conversationPtr}
             alt="conversation"
             style={{ width: "50%" }}
           />
           <Button sx={couresButtonStyle}>Writing & Speaking</Button>
-        </Box>
+        </Grid>
 
-        <Box {...columnContainterProps} sx={courseColumnContainerResponsiveStyle}>
+        {/* Item 5 */}
+        <Grid {...gridItemProps}>
           <img src={groupPtr} alt="group" style={{ width: "50%" }} />
           <Button sx={couresButtonStyle}>Advanced 7.0+</Button>
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
 
       <Box sx={{ marginBottom: 5 }}>
         <Button
