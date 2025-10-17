@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
-type SelectItem = {
-  label: string;
-  value: string;
-  link: string;
-};
+import { SelectItem } from "../model/select_item";
 
 interface SelectProps {
   label: string;

@@ -10,10 +10,41 @@ import {
 } from "@mui/material";
 import logo from "../images/logo.png";
 import DropBox from "./dropbox";
-import React from "react";
-import MenuIcon from '@mui/icons-material/Menu';
+import React, { useEffect, useState } from "react";
+import MenuIcon from "@mui/icons-material/Menu";
+import { CourseName } from "../model/course";
+import { getCourseName } from "../services/course_services";
+import { SelectItem } from "../model/select_item";
 
 const Header: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [khoaHocItems, setKhoaHocItems] = useState<SelectItem[]>([]);
+
+  useEffect(() => {
+    const fetchCousreNames = async () => {
+      try {
+        const res = await getCourseName();
+        const apiData: CourseName[] = res.data.data;
+
+        const formattedData = apiData.map(course => ({
+          label: course.courseName,
+          value: course.courseId,
+          link: `/course/${course.courseId}`,
+        }));
+
+        setKhoaHocItems(formattedData);
+      } catch (err) {
+        setError("Không thể tải danh sách khóa học.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCousreNames();
+    console.log(khoaHocItems);
+  }, []);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -31,41 +62,6 @@ const Header: React.FC = () => {
     },
     {
       label: "SR & AR – phương pháp độc quyền",
-      value: "contact",
-      link: "/contact",
-    },
-  ];
-
-  const khoaHocItems = [
-    { label: "Tổng quan khóa học", value: "home", link: "/course" },
-    { label: "Pre – IELTS (IELTS 4.5)", value: "about", link: "/about" },
-    {
-      label: "IELTS Reading & Listening",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "IELTS Writing & Speaking",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "Các khóa học IELTS miễn phí",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "IELTS Advanced 7.0+",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "IELTS cấp tốc",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "Nền tảng – Tiếng Anh Giao Tiếp",
       value: "contact",
       link: "/contact",
     },
@@ -128,25 +124,31 @@ const Header: React.FC = () => {
   ];
 
   const dropboxProps = {
-    fontWeight: "bold", 
+    fontWeight: "bold",
     textTransform: "uppercase",
     borderRadius: 0,
     fontSize: 18,
-    color:"rgba(230, 62, 20, 1)",
+    color: "rgba(230, 62, 20, 1)",
     ":hover": {
       borderBottom: 2,
-      borderBottomColor:"rgba(26, 29, 175, 1)",
+      borderBottomColor: "rgba(26, 29, 175, 1)",
       color: "rgba(26, 29, 175, 1)",
-      backgroundColor: "transparent"
-    }
+      backgroundColor: "transparent",
+    },
   };
 
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
   return (
+    
     <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <a href="/"><img src={logo} alt="logo" style={{ height: 60, marginTop: 10, }} /></a>
+          <a href="/">
+            <img src={logo} alt="logo" style={{ height: 60, marginTop: 10 }} />
+          </a>
         </Box>
 
         {/* Menu desktop*/}
@@ -157,11 +159,7 @@ const Header: React.FC = () => {
               items={phuongPhapHocItems}
             ></DropBox>
             <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
-            <Button
-              sx={dropboxProps}
-              
-              onClick={() => {}}
-            >
+            <Button sx={dropboxProps} onClick={() => {}}>
               Lịch khai giảng
             </Button>
             <DropBox label={"Blog"} items={blogItems}></DropBox>
@@ -172,9 +170,9 @@ const Header: React.FC = () => {
         {/* Menu Mobile */}
         {isMobile && (
           <>
-          <IconButton onClick={toggleDrawer(true)} color="error">
-              <MenuIcon/>
-          </IconButton>
+            <IconButton onClick={toggleDrawer(true)} color="error">
+              <MenuIcon />
+            </IconButton>
             <Drawer
               anchor="right"
               open={drawerOpen}
@@ -190,18 +188,15 @@ const Header: React.FC = () => {
                 }}
               >
                 <DropBox
-              label={"Phương pháp học"}
-              items={phuongPhapHocItems}
-            ></DropBox>
-            <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
-            <Button
-              sx={dropboxProps}
-              onClick={() => {}}
-            >
-              Lịch khai giảng
-            </Button>
-            <DropBox label={"Blog"} items={blogItems}></DropBox>
-            <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>           
+                  label={"Phương pháp học"}
+                  items={phuongPhapHocItems}
+                ></DropBox>
+                <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+                <Button sx={dropboxProps} onClick={() => {}}>
+                  Lịch khai giảng
+                </Button>
+                <DropBox label={"Blog"} items={blogItems}></DropBox>
+                <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
               </Box>
             </Drawer>
           </>

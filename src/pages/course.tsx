@@ -9,11 +9,44 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, BoxProps, Button, Typography } from "@mui/material";
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
 import CourseCard from "../componets/course_card";
+import { useParams } from "react-router-dom";
+import { getCourseDetail } from "../services/course_services";
+import { CourseModel } from "../model/course";
 
 function Course() {
+  const { id } = useParams();
+  const [course, setCourse] = useState<CourseModel | null>(null);
+  const thumbnails = [thumnailCourse1, thumnailCourse2, thumnailCourse3];
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const res = await getCourseDetail(id);
+        setCourse(res.data.data);
+      } catch (error) {
+        console.error("Lỗi khi tải khóa học:", error);
+      }
+    };
+
+    fetchCourse();
+  }, [id]);
+
+  
+// function formatCourses(apiData: any) {
+//   return apiData.map((courses, idx) => ({
+//     imageSrc: thumbnails[idx % thumbnails.length],
+//     title: courses.courseName,
+//     summaryItems: [
+//       `${courses.numberOfSessions} buổi học - ${courses.studyHours} giờ học`,
+//       "Hình thức: Offline",
+//       courses.description || "Chưa có mô tả khóa học.",
+//     ],
+//   }));
+// }
+
   const linkYoutube = "https://www.youtube.com/embed/";
 
   // DỮ liệu mẫu
@@ -81,7 +114,7 @@ function Course() {
   const outputIconStyle: CSSProperties = {
     color: "#FD3F00",
     position: "relative",
-    top: 9,
+    top: 3.5,
   };
 
   const tableContentStyle = {
@@ -94,17 +127,21 @@ function Course() {
     textAlign: "left",
   };
 
+  if (!course) return <Typography>Đang tải...</Typography>;
   return (
     <>
       {/* Course detail */}
-      <Box {...rowContainterProps} sx={{flexDirection: {xs: "column", md: "row"}}}>
+      <Box
+        {...rowContainterProps}
+        sx={{ flexDirection: { xs: "column", md: "row" } }}
+      >
         {/* First column */}
         <Box
           {...columnContainterProps}
           sx={{ width: "55%", margin: "10px", padding: "10px" }}
         >
           <Typography variant="h4" sx={{ ...headerTextStyle }}>
-            Khóa học <span>IELTS Writing và Speaking</span>
+            {course.courseName}
           </Typography>
 
           <Typography
@@ -117,7 +154,7 @@ function Course() {
           </Typography>
 
           {/* Hiển thị số lượng học viên */}
-          <Box {...rowContainterProps} sx={{ alignItems: "center", mt: 2 }}>
+          <Box {...rowContainterProps} sx={{ alignItems: "center", mt: 2, justifyContent: "flex-start" }}>
             <FontAwesomeIcon
               icon={faUserGraduate}
               style={{ color: "#FD3F00" }}
@@ -129,12 +166,11 @@ function Course() {
 
           <Box>
             <Typography variant="h5" sx={{ ...headerTextStyle, mt: 10 }}>
-              Bạn sẽ đạt được gì sau khóa học IELTS Writing và Speaking
+              Bạn sẽ đạt được gì sau {course.courseName}
             </Typography>
           </Box>
 
-          {/* Bảng đầu vào, đầu ra của khóa học */}
-          {/* Dòng header đầu của bảng */}
+          {/* Mục tiêu đầu ra của khóa học */}
           <Box
             sx={{
               border: "solid",
@@ -143,284 +179,30 @@ function Course() {
               boxShadow: "0px 0px 0px 0px rgba(0,0,0,0.5)",
               borderRadius: "15px",
               mt: 2,
+              width: "90%",
             }}
           >
-            <Box {...rowContainterProps}>
-              <Box sx={{ width: "20%" }}></Box>
-              <Box
-                sx={{
-                  borderRight: 1,
-                  borderLeft: 1,
-                  borderColor: "#A2A2A2",
-                  padding: "10px",
-                  flex: 1,
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    ...rowHeaderTextStyle,
-                  }}
-                >
-                  Đầu vào
-                </Typography>
-              </Box>
-
-              <Box sx={{ flex: 1, padding: "10px" }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    ...rowHeaderTextStyle,
-                    color: "#FD3F00",
-                  }}
-                >
-                  Đầu ra
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Dòng thứ 2 */}
-          <Box
-            sx={{
-              border: "solid",
-              borderWidth: 1,
-              borderColor: "#A2A2A2",
-              boxShadow: "0px 0px 0px 0px rgba(0,0,0,0.5)",
-              borderRadius: "15px",
-            }}
-          >
-            {/* Cột tiêu đề */}
-            <Box {...rowContainterProps}>
-              <Box sx={{ width: "20%" }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    ...rowHeaderTextStyle,
-                    padding: "10px",
-                  }}
-                >
-                  Writing
-                </Typography>
-              </Box>
-
-              {/* Dòng đầu vào */}
-              <Box
-                sx={{
-                  borderRight: 1,
-                  borderLeft: 1,
-                  borderColor: "#A2A2A2",
-                  padding: "10px",
-                  flex: 1,
-                }}
-              >
-                <ul className="list-condition" style={{ ...ulStyle }}>
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{
-                        ...inputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{
-                        ...inputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{ ...inputIconStyle }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-                </ul>
-              </Box>
-
-              {/* Đòng đầu ra */}
+            <Box {...rowContainterProps} padding="10px">
               <Box sx={{ flex: 1, padding: "10px" }}>
                 <ul className="list-condition" style={{ ...ulStyle }}>
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
+                  {course.objectives.map((obj) => (
+                    <li
+                      key={obj.id}
                       style={{
-                        ...outputIconStyle,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        marginTop: 10,
                       }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>
-                        Học và luyện Writing chuyên sâu với phương pháp PAW
-                        (Procedural Approach of Writing)
-                      </strong>
-                      , nắm vững kỹ thuật viết bài chuẩn IELTS.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      style={{
-                        ...outputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      style={{
-                        ...outputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-                </ul>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Dòng thứ 3 */}
-          <Box
-            sx={{
-              border: "solid",
-              borderWidth: 1,
-              borderColor: "#A2A2A2",
-              boxShadow: "0px 0px 0px 0px rgba(0,0,0,0.5)",
-              borderRadius: "15px",
-            }}
-          >
-            {/* Cột tiêu đề */}
-            <Box {...rowContainterProps}>
-              <Box sx={{ width: "20%" }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    ...rowHeaderTextStyle,
-                    padding: "10px",
-                  }}
-                >
-                  Reading
-                </Typography>
-              </Box>
-
-              {/* Dòng đầu vào */}
-              <Box
-                sx={{
-                  borderRight: 1,
-                  borderLeft: 1,
-                  borderColor: "#A2A2A2",
-                  padding: "10px",
-                  flex: 1,
-                }}
-              >
-                <ul className="list-condition" style={{ ...ulStyle }}>
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{
-                        ...inputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{
-                        ...inputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleExclamation}
-                      style={{ ...inputIconStyle }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-                </ul>
-              </Box>
-
-              {/* Đòng đầu ra */}
-              <Box sx={{ flex: 1, padding: "10px" }}>
-                <ul className="list-condition" style={{ ...ulStyle }}>
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      style={{
-                        ...outputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>
-                        Học và luyện Writing chuyên sâu với phương pháp PAW
-                        (Procedural Approach of Writing)
-                      </strong>
-                      , nắm vững kỹ thuật viết bài chuẩn IELTS.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      style={{
-                        ...outputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
-
-                  <li>
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      style={{
-                        ...outputIconStyle,
-                      }}
-                    />
-                    <Typography variant="body1" sx={{ ...tableContentStyle }}>
-                      <strong>Viết theo cảm tính, nghĩ gì viết đó</strong>, chưa
-                      biết cách sắp xếp ý tưởng trong bài IELTS Writing.
-                    </Typography>
-                  </li>
+                    >
+                      <FontAwesomeIcon
+                        icon={faCircleCheck}
+                        style={{ ...outputIconStyle }}
+                      />
+                      <Typography variant="body1" sx={{ ...tableContentStyle }}>
+                        {obj.objectiveName}
+                      </Typography>
+                    </li>
+                  ))}
                 </ul>
               </Box>
             </Box>
@@ -436,13 +218,13 @@ function Course() {
               variant="body1"
               sx={{ mt: 2, color: "rgb(44 43 43 / 78%)" }}
             >
-              <span>14 </span> tuần – <span>42 </span> buổi học –{" "}
-              <span>63</span>h giờ học trên lớp
+              <span>{course.numberOfSessions} </span> buổi học –{" "}
+              <span>{course.studyHours}</span>h giờ học trên lớp
             </Typography>
           </Box>
 
           <Box>
-            <CourseModuleDetails />
+            {course && <CourseModuleDetails modules={course.modules} />}
           </Box>
         </Box>
 
@@ -473,7 +255,7 @@ function Course() {
                 component="iframe"
                 width="100%"
                 height="100%"
-                src={linkYoutube + "IADhKnmQMtk"} //Thay lại khi có API
+                src={linkYoutube + "IADhKnmQMtk?autoplay=1&mute=1"} //Thay lại khi có API
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -487,18 +269,19 @@ function Course() {
                 variant="h5"
                 sx={{ fontWeight: "bold", color: "#003E83" }}
               >
-                Khóa học IELTS <br /> Writing và Speaking
+                {course.courseName}
               </Typography>
             </Box>
 
             {/* Tuition fee */}
             <Box sx={{ mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                Học phí: 10.900.000đ
+                Học phí:{" "}
+                {new Intl.NumberFormat("vi-VN").format(course.tuitionFee)}đ
               </Typography>
             </Box>
 
-            {/* Button inbox to admin */}
+            {/* Button đăng ký khóa học */}
             <Box sx={{ mt: 5 }}>
               <Button
                 sx={{
@@ -515,7 +298,7 @@ function Course() {
                   },
                 }}
               >
-                Nhắn tin với IPU qua Fanpage
+                Đăng ký ngay
               </Button>
             </Box>
           </Box>
