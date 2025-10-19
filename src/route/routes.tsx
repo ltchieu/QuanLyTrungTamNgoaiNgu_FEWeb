@@ -7,10 +7,10 @@ function AppRoutes() {
   return (
     <div>
       <Routes>
-        <Route element={<MainLayout/>}>
-          <Route path="/" element={<HomePage/>}></Route>
-          <Route path="/course" element={<Course/>}></Route>
-           <Route path="/course/:id" element={<Course />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />}></Route>
+          <Route path="/course" element={<Course />}></Route>
+          <Route path="/course/:id" element={<Course />} />
         </Route>
       </Routes>
     </div>

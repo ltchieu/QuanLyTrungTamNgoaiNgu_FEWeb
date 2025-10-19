@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-interface CourseCardProps {
+export interface CourseCardProps {
   imageSrc: string;
   title: string;
   summaryItems: string[];

@@ -27,13 +27,17 @@ const Header: React.FC = () => {
         const res = await getCourseName();
         const apiData: CourseName[] = res.data.data;
 
-        const formattedData = apiData.map(course => ({
-          label: course.courseName,
-          value: course.courseId,
-          link: `/course/${course.courseId}`,
-        }));
-
-        setKhoaHocItems(formattedData);
+       if (Array.isArray(apiData)) {
+          const formattedData = apiData.map(course => ({
+            label: course.courseName,
+            value: course.courseId,
+            link: `/course/${course.courseId}`,
+          }));
+          setKhoaHocItems(formattedData);
+        } else {
+          console.error("Dữ liệu nhận được không phải là mảng:", apiData);
+          setKhoaHocItems([]); 
+        }
       } catch (err) {
         setError("Không thể tải danh sách khóa học.");
         console.error(err);

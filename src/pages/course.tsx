@@ -11,14 +11,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, BoxProps, Button, Typography } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
-import CourseCard from "../componets/course_card";
+import CourseCard, { CourseCardProps } from "../componets/course_card";
 import { useParams } from "react-router-dom";
-import { getCourseDetail } from "../services/course_services";
+import { getCourseDetail, getSuggestCourse } from "../services/course_services";
 import { CourseModel } from "../model/course";
 
 function Course() {
   const { id } = useParams();
   const [course, setCourse] = useState<CourseModel | null>(null);
+  const [recomendCourse, setRecomendCourse] = useState<CourseCardProps[]>([]);
   const thumbnails = [thumnailCourse1, thumnailCourse2, thumnailCourse3];
 
   useEffect(() => {
@@ -31,54 +32,42 @@ function Course() {
       }
     };
 
+    const fetchRecomendCourse = async () => {
+      try {
+        const response = await getSuggestCourse(id);
+        const apiData = response.data.data;
+
+        if (Array.isArray(apiData)) {
+          const formattedCourses: CourseCardProps[] = apiData.map((course) => ({
+            imageSrc: `/images/${course.image}`, // đường dẫn ảnh
+            title: course.courseName,
+            summaryItems: [
+              `${course.numberOfSessions ?? 20} buổi - ${
+                course.studyHours ?? 40
+              } giờ học`,
+              "Hình thức: Offline",
+              course.description,
+            ],
+          }));
+
+          setRecomendCourse(formattedCourses);
+        } else {
+          console.error(
+            "Dữ liệu khóa học đề xuất không phải là mảng:",
+            apiData
+          );
+          setRecomendCourse([]);
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải đề xuất khóa học:", err);
+      }
+    };
+
     fetchCourse();
+    fetchRecomendCourse();
   }, [id]);
 
-  
-// function formatCourses(apiData: any) {
-//   return apiData.map((courses, idx) => ({
-//     imageSrc: thumbnails[idx % thumbnails.length],
-//     title: courses.courseName,
-//     summaryItems: [
-//       `${courses.numberOfSessions} buổi học - ${courses.studyHours} giờ học`,
-//       "Hình thức: Offline",
-//       courses.description || "Chưa có mô tả khóa học.",
-//     ],
-//   }));
-// }
-
   const linkYoutube = "https://www.youtube.com/embed/";
-
-  // DỮ liệu mẫu
-  const coursesData = [
-    {
-      imageSrc: thumnailCourse1,
-      title: "IELTS Writing Foundation",
-      summaryItems: [
-        "Xây dựng nền tảng ngữ pháp",
-        "Học cách viết câu phức",
-        "Phân tích đề bài Task 2",
-      ],
-    },
-    {
-      imageSrc: thumnailCourse2,
-      title: "IELTS Speaking Intensive",
-      summaryItems: [
-        "Luyện phát âm chuẩn IPA",
-        "Chiến thuật trả lời Part 1, 2, 3",
-        "Tăng cường vốn từ vựng học thuật",
-      ],
-    },
-    {
-      imageSrc: thumnailCourse3,
-      title: "Khóa Luyện đề Tổng hợp",
-      summaryItems: [
-        "Thực hành 4 kỹ năng",
-        "Giải đề thi thật các năm",
-        "Mẹo quản lý thời gian hiệu quả",
-      ],
-    },
-  ];
 
   const rowContainterProps: BoxProps = {
     display: "flex",
@@ -154,7 +143,10 @@ function Course() {
           </Typography>
 
           {/* Hiển thị số lượng học viên */}
-          <Box {...rowContainterProps} sx={{ alignItems: "center", mt: 2, justifyContent: "flex-start" }}>
+          <Box
+            {...rowContainterProps}
+            sx={{ alignItems: "center", mt: 2, justifyContent: "flex-start" }}
+          >
             <FontAwesomeIcon
               icon={faUserGraduate}
               style={{ color: "#FD3F00" }}
@@ -307,7 +299,7 @@ function Course() {
 
       {/* Introduce more course */}
       <Box {...rowContainterProps} sx={{ maxWidth: "1140px", margin: "auto" }}>
-        {coursesData.map((course) => (
+        {recomendCourse.map((course) => (
           <CourseCard
             key={course.title}
             imageSrc={course.imageSrc}
