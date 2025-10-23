@@ -13,7 +13,7 @@ import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
 import CourseCard, { CourseCardProps } from "../componets/course_card";
 import { useParams } from "react-router-dom";
-import { getCourseDetail, getSuggestCourse } from "../services/course_services";
+import { getCourseDetail, getImageUrl, getSuggestCourse } from "../services/course_services";
 import { CourseModel } from "../model/course";
 
 function Course() {
@@ -39,7 +39,7 @@ function Course() {
 
         if (Array.isArray(apiData)) {
           const formattedCourses: CourseCardProps[] = apiData.map((course) => ({
-            imageSrc: `/images/${course.image}`, // đường dẫn ảnh
+            imageSrc: course.image, // đường dẫn ảnh
             title: course.courseName,
             summaryItems: [
               `${course.numberOfSessions ?? 20} buổi - ${
@@ -302,7 +302,7 @@ function Course() {
         {recomendCourse.map((course) => (
           <CourseCard
             key={course.title}
-            imageSrc={course.imageSrc}
+            imageSrc={getImageUrl(course.imageSrc)}
             title={course.title}
             summaryItems={course.summaryItems}
           />

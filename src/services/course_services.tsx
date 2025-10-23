@@ -11,3 +11,7 @@ export function getCourseDetail(id?: string){
 export function getSuggestCourse(id?: string){
     return axiosClient.get(`/courses/recommedcousres/${id}`)
 }
+
+export function getImageUrl(fileName: string): string{
+  return `${axiosClient.defaults.baseURL}/files/${fileName}`;
+}
