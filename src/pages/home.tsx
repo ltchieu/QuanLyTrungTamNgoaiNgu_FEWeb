@@ -20,13 +20,6 @@ import Banner from "../componets/banner";
 import IntroduceTeacher from "../componets/introduceTeacher";
 
 function HomePage() {
-  const rowContainterProps: BoxProps = {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  };
-
   const columnContainterProps: BoxProps = {
     display: "flex",
     flexDirection: "column",
@@ -170,7 +163,7 @@ function HomePage() {
               "linear-gradient(90deg, #da4a15ff 25%, #9b362bff 40%, #0A2342 100%)",
             margin: "auto",
             marginBottom: 6,
-            width: { xs: "80%", md: "60%" },
+            width: { xs: "80%", md: "70%" },
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-around",
@@ -206,6 +199,7 @@ function HomePage() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              pr: { md: 3 },
             }}
           >
             <Button

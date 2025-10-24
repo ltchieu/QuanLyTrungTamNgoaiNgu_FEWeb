@@ -4,6 +4,7 @@ import {
   Button,
   Drawer,
   IconButton,
+  SxProps,
   Toolbar,
   useMediaQuery,
   useTheme,
@@ -15,10 +16,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { CourseName } from "../model/course";
 import { getCourseName } from "../services/course_services";
 import { SelectItem } from "../model/select_item";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
 
 const Header: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, user, logout } = useAuth();
   const [khoaHocItems, setKhoaHocItems] = useState<SelectItem[]>([]);
 
   useEffect(() => {
@@ -27,8 +31,8 @@ const Header: React.FC = () => {
         const res = await getCourseName();
         const apiData: CourseName[] = res.data.data;
 
-       if (Array.isArray(apiData)) {
-          const formattedData = apiData.map(course => ({
+        if (Array.isArray(apiData)) {
+          const formattedData = apiData.map((course) => ({
             label: course.courseName,
             value: course.courseId,
             link: `/course/${course.courseId}`,
@@ -36,7 +40,7 @@ const Header: React.FC = () => {
           setKhoaHocItems(formattedData);
         } else {
           console.error("Dữ liệu nhận được không phải là mảng:", apiData);
-          setKhoaHocItems([]); 
+          setKhoaHocItems([]);
         }
       } catch (err) {
         setError("Không thể tải danh sách khóa học.");
@@ -46,7 +50,6 @@ const Header: React.FC = () => {
       }
     };
     fetchCousreNames();
-    console.log(khoaHocItems);
   }, []);
 
   const theme = useTheme();
@@ -55,6 +58,7 @@ const Header: React.FC = () => {
   //Drawer control
   const [drawerOpen, serDrawerOpen] = React.useState(false);
   const toggleDrawer = (open: boolean) => () => serDrawerOpen(open);
+  const navigate = useNavigate();
 
   const phuongPhapHocItems = [
     { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/about" },
@@ -141,11 +145,24 @@ const Header: React.FC = () => {
     },
   };
 
+  const authButtonProps: SxProps = {
+    color: "white",
+    width: "100px",
+    py: 1,
+    transition: "all 0.3s ease",
+    opacity: "0.9",
+    borderRadius: "15px",
+    textTransform: "none",
+    fontWeight: "bold",
+    ":hover": {
+      transform: "scale(0.9)",
+    },
+  };
+
   if (loading) {
     return <div>Đang tải...</div>;
   }
   return (
-    
     <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-evenly" }}>
         {/* Logo */}
@@ -157,18 +174,39 @@ const Header: React.FC = () => {
 
         {/* Menu desktop*/}
         {!isMobile && (
-          <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
-            <DropBox
-              label={"Phương pháp học"}
-              items={phuongPhapHocItems}
-            ></DropBox>
-            <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
-            <Button sx={dropboxProps} onClick={() => {}}>
-              Lịch khai giảng
-            </Button>
-            <DropBox label={"Blog"} items={blogItems}></DropBox>
-            <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
-          </Box>
+          <>
+            <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
+              <DropBox
+                label={"Phương pháp học"}
+                items={phuongPhapHocItems}
+              ></DropBox>
+              <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+              <Button sx={dropboxProps} onClick={() => {}}>
+                Lịch khai giảng
+              </Button>
+              <DropBox label={"Blog"} items={blogItems}></DropBox>
+              <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
+            </Box>
+            <Box>
+              {isAuthenticated ? (
+                <Button
+                  sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
+                  onClick={() => {
+                    navigate("/login");
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
+                  onClick={logout}
+                >
+                  Login
+                </Button>
+              )}
+            </Box>
+          </>
         )}
 
         {/* Menu Mobile */}
@@ -201,6 +239,30 @@ const Header: React.FC = () => {
                 </Button>
                 <DropBox label={"Blog"} items={blogItems}></DropBox>
                 <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
+              </Box>
+              <Box
+                display="flex"
+                justifyContent="space-evenly"
+                alignItems="center"
+                sx={{ gap: 2 }}
+              >
+                <Button
+                  sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
+                  onClick={() => {
+                    navigate("/login");
+                  }}
+                >
+                  Login
+                </Button>
+
+                <Button
+                  sx={{ ...authButtonProps, backgroundColor: "#001b86" }}
+                  onClick={() => {
+                    navigate("/signup");
+                  }}
+                >
+                  Sign up
+                </Button>
               </Box>
             </Drawer>
           </>
