@@ -43,6 +43,7 @@ export async function signupService(signupData: SignupRequest): Promise<void> {
   }
 }
 
+//Resend mail xác thực
 export function resendVerificationEmail(email: string, type: string = 'EMAIL_VERIFICATION') {
   return axiosClient.post("/auth/resend", null, {
     params: {

@@ -17,10 +17,13 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginRequest, SignupRequest } from "../model/auth_model";
 import { useAuth } from "../hook/useAuth";
-import { signupService } from "../services/auth_service";
+import {
+  resendVerificationEmail,
+  signupService,
+} from "../services/auth_service";
 
 const theme = createTheme({
   palette: {
@@ -103,6 +106,26 @@ const Login = () => {
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [showResendButton, setShowResendButton] = useState<boolean>(false);
+  // State loading cho nút Resend
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let timerId: NodeJS.Timeout | null = null;
+
+    if (isSuccess === true) {
+      timerId = setTimeout(() => {
+        setShowResendButton(true); // Hiển thị nút Resend sau 2 phút
+      }, 120 * 1000);
+    }
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [isSuccess]);
+
   const handleSignUpClick = () => {
     setIsSignUpActive(true);
   };
@@ -143,20 +166,54 @@ const Login = () => {
   };
 
   const handleLoginSubmit = async (event: React.FormEvent) => {
+    setIsSuccess(false);
+    setErrorMessage(null);
     await login(loginValue);
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
+    setIsSuccess(false);
+    setErrorMessage(null);
+    setShowResendButton(false); // Reset nút resend khi submit lại
+    setResendMessage(null);
     try {
       await signupService(signupValue);
       setIsSuccess(true);
     } catch (err: any) {
-     const backendMessage = err.response?.data?.message;
-      
-      setErrorMessage(backendMessage || err.message || "Đã xảy ra lỗi không xác định.");
-      
+      const backendMessage = err.response?.data?.message;
+
+      setErrorMessage(
+        backendMessage || err.message || "Đã xảy ra lỗi không xác định."
+      );
+
       console.log("Signup failed:", err.response?.data || err);
       setIsSuccess(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!signupValue.email) {
+      // Cần email từ form đăng ký
+      setResendMessage("Không tìm thấy email để gửi lại.");
+      return;
+    }
+    setIsResending(true);
+    setResendMessage(null);
+    try {
+      await resendVerificationEmail(signupValue.email, "EMAIL_VERIFICATION");
+      setResendMessage("Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư.");
+      setShowResendButton(false); // Ẩn nút sau khi gửi thành công
+    } catch (error: any) {
+      console.error(
+        "Resend email error:",
+        error.response?.data || error.message
+      );
+      setResendMessage(
+        error.response?.data?.message ||
+          "Gửi lại email thất bại. Vui lòng thử lại sau."
+      );
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -263,17 +320,51 @@ const Login = () => {
             </Button>
           </Box>
 
-          <Box sx={{mt: 2, mb: 1}}>
+          <Box sx={{ mt: 2, mb: 1 }}>
             {isSuccess === true ? (
-              <Typography variant="h6" color="#55de0c">
-                Đăng ký thành công! Vui lòng xác thực qua email trước khi đăng
-                nhập.
-              </Typography>
+              showResendButton ? (
+                // Hiển thị nút Resend sau 2 phút
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body1" color="textSecondary">
+                    Chưa nhận được email?
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleResendEmail}
+                    disabled={isResending}
+                  >
+                    {isResending ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      "Gửi lại email"
+                    )}
+                  </Button>
+                </Box>
+              ) : resendMessage ? null : (
+                // Hiển thị thông báo thành công ban đầu
+                <Typography variant="body1" color="#55de0c">
+                  Đăng ký thành công! Vui lòng xác thực qua email trước khi đăng
+                  nhập.
+                </Typography>
+              )
             ) : isSuccess === false ? (
-              <Typography variant="h6" color="error">
-                {errorMessage}
+              // Hiển thị thông báo lỗi đăng ký
+              <Typography variant="body1" color="error">
+                {errorMessage || "Đăng ký thất bại. Vui lòng thử lại!"}
               </Typography>
             ) : null}
+
+            {/* Hiển thị thông báo sau khi gửi lại email */}
+            {resendMessage && (
+              <Typography
+                variant="body2"
+                color={resendMessage.includes("thất bại") ? "error" : "primary"}
+                sx={{ mt: 1 }}
+              >
+                {resendMessage}
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -367,7 +458,7 @@ const Login = () => {
             </Box>
           </Box>
           {error && (
-            <Box sx={{mt: 2}}>
+            <Box sx={{ mt: 2 }}>
               <Typography variant="h6" color="error">
                 {error}
               </Typography>
