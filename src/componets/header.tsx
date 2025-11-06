@@ -13,8 +13,8 @@ import logo from "../images/logo.png";
 import DropBox from "./dropbox";
 import React, { useEffect, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
-import { CourseName } from "../model/course";
-import { getCourseName } from "../services/course_services";
+import { CourseCategoryResponse, CourseName } from "../model/course_model";
+import { getAllCategories, getCourseName } from "../services/course_services";
 import { SelectItem } from "../model/select_item";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
@@ -24,6 +24,7 @@ const Header: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, user, logout } = useAuth();
   const [khoaHocItems, setKhoaHocItems] = useState<SelectItem[]>([]);
+  const [danhMucItems, setdanhMucItems] = useState<SelectItem[]>([])
 
   useEffect(() => {
     const fetchCousreNames = async () => {
@@ -49,7 +50,32 @@ const Header: React.FC = () => {
         setLoading(false);
       }
     };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await getAllCategories();
+        const apiData: CourseCategoryResponse[] = res.data;
+
+        if (Array.isArray(apiData)) {
+          const formattedData = apiData.map((c) => ({
+            label: c.name,
+            value: c.id.toString(),
+            link: `/course/category/${c.id}`,
+          }));
+          setdanhMucItems(formattedData);
+        } else {
+          console.error("Dữ liệu nhận được không phải là mảng:", apiData);
+          setdanhMucItems([]);
+        }
+      } catch (err) {
+        setError("Không thể tải danh sách khóa học.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchCousreNames();
+    fetchCategories();
   }, []);
 
   const theme = useTheme();
@@ -181,6 +207,10 @@ const Header: React.FC = () => {
                 items={phuongPhapHocItems}
               ></DropBox>
               <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+              
+              {/* Tạm thời */}
+              <DropBox label={"Danh mục"} items={danhMucItems}></DropBox>
+
               <Button sx={dropboxProps} onClick={() => {}}>
                 Lịch khai giảng
               </Button>

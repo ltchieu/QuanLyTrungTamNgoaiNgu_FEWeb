@@ -12,15 +12,20 @@ import { Box, BoxProps, Button, Typography } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
 import CourseCard, { CourseCardProps } from "../componets/course_card";
-import { useParams } from "react-router-dom";
-import { getCourseDetail, getImageUrl, getSuggestCourse } from "../services/course_services";
-import { CourseModel } from "../model/course";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getCourseDetail,
+  getImageUrl,
+  getSuggestCourse,
+} from "../services/course_services";
+import { CourseModel } from "../model/course_model";
 
 function Course() {
   const { id } = useParams();
   const [course, setCourse] = useState<CourseModel | null>(null);
   const [recomendCourse, setRecomendCourse] = useState<CourseCardProps[]>([]);
   const thumbnails = [thumnailCourse1, thumnailCourse2, thumnailCourse3];
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -39,7 +44,7 @@ function Course() {
 
         if (Array.isArray(apiData)) {
           const formattedCourses: CourseCardProps[] = apiData.map((course) => ({
-            imageSrc: course.image, // đường dẫn ảnh
+            imageSrc: course.image,
             title: course.courseName,
             summaryItems: [
               `${course.numberOfSessions ?? 20} buổi - ${
@@ -130,7 +135,7 @@ function Course() {
           sx={{ width: "55%", margin: "10px", padding: "10px" }}
         >
           <Typography variant="h4" sx={{ ...headerTextStyle }}>
-            {course.courseName}
+            {course.category} {" - "}{course.courseName}
           </Typography>
 
           <Typography
@@ -289,6 +294,15 @@ function Course() {
                     backgroundColor: "#0074FC",
                   },
                 }}
+                onClick={() =>
+                  navigate("/register-course", {
+                    state: {
+                      courseId: course.courseId,
+                      courseName: course.courseName,
+                      categoryName: course.category,
+                    },
+                  })
+                }
               >
                 Đăng ký ngay
               </Button>

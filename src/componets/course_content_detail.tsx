@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Box, List, ListItem, ListItemText, Collapse } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
-import { Module } from "../model/course"; // ✅ Import kiểu dữ liệu bạn đã định nghĩa sẵn
+import { Module } from "../model/course_model"; // ✅ Import kiểu dữ liệu bạn đã định nghĩa sẵn
 
 interface CourseModuleDetailsProps {
   modules: Module[];

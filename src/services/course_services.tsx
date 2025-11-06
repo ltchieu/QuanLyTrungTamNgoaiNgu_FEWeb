@@ -1,7 +1,12 @@
 import { axiosClient } from "../api/axios_client";
+import { CourseCategoryResponse, Module } from "../model/course_model";
 
 export function getCourseName(){
     return axiosClient.get("/courses/activecourses")
+}
+
+export function getAllCategories() {
+  return axiosClient.get<CourseCategoryResponse[]>("/categories");
 }
 
 export function getCourseDetail(id?: string){

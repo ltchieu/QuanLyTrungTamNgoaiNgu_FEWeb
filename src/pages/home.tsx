@@ -18,8 +18,10 @@ import StudentFeedback from "../componets/student_feedback";
 import WhyChooseUs from "../componets/why_choose_us";
 import Banner from "../componets/banner";
 import IntroduceTeacher from "../componets/introduceTeacher";
+import { useNavigate } from "react-router-dom";
 
 function HomePage() {
+  const navigate = useNavigate()
   const columnContainterProps: BoxProps = {
     display: "flex",
     flexDirection: "column",
@@ -308,6 +310,8 @@ function HomePage() {
         <WhyChooseUs />
 
         <IntroduceTeacher />
+
+        <Button onClick={() => {navigate("/regsisterPackage")}}>Test</Button>
       </Box>
     </>
   );

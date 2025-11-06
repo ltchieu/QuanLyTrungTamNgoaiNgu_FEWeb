@@ -116,7 +116,7 @@ const Login = () => {
 
     if (isSuccess === true) {
       timerId = setTimeout(() => {
-        setShowResendButton(true); // Hiển thị nút Resend sau 2 phút
+        setShowResendButton(true);
       }, 120 * 1000);
     }
     return () => {

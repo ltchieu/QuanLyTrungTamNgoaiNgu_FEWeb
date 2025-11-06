@@ -32,6 +32,11 @@ export interface Module {
   documents: Document[];
 }
 
+// export interface Category {
+//   categoryId: number;
+//   categoryName: string;
+// }
+
 //Toàn bộ khóa học
 export interface CourseModel {
   courseId: number;
@@ -42,10 +47,16 @@ export interface CourseModel {
   video: string;
   objectives: Objective[];
   modules: Module[];
+  category: string;
 }
 
 //Response từ API
 export interface CourseResponse {
   code: number;
   data: CourseModel;
+}
+
+export interface CourseCategoryResponse {
+  id: number;
+  name: string;
 }
