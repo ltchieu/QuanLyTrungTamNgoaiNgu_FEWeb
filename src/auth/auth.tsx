@@ -150,7 +150,7 @@ const Login = () => {
         return newData;
       });
     } else {
-      // --- Nếu đang ở form Đăng nhập ---
+      //Nếu đang ở form Đăng nhập
       setLoginValue((prevData) => {
         const newData = { ...prevData, [name]: value };
 
