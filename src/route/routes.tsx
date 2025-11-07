@@ -5,7 +5,7 @@ import Course from "../pages/course";
 import Login from "../auth/auth";
 import RegisterCoursePage from "../pages/register_course";
 import CategoryPage from "../pages/category_page";
-import CoursePackageRegister from "../pages/category_page";
+import RegisterPage from "../pages/register_course";
 
 function AppRoutes() {
   return (
@@ -16,7 +16,8 @@ function AppRoutes() {
           <Route path="/course" element={<Course />}></Route>
           <Route path="/course/:id" element={<Course />} />
           <Route path="/register-course" element={<RegisterCoursePage />} />
-          <Route path="/regsisterPackage" element={<CoursePackageRegister />} />
+          <Route path="/course/category/:id" element={<CategoryPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
         <Route path="/login" element={<Login />}></Route>
       </Routes>

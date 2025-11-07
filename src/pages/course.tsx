@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, BoxProps, Button, Typography } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
-import CourseCard, { CourseCardProps } from "../componets/course_card";
+import { CourseCardProps } from "../componets/course_recommend_card";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getCourseDetail,
@@ -19,6 +19,7 @@ import {
   getSuggestCourse,
 } from "../services/course_services";
 import { CourseModel } from "../model/course_model";
+import CourseRecommendCard from "../componets/course_recommend_card";
 
 function Course() {
   const { id } = useParams();
@@ -134,10 +135,6 @@ function Course() {
           {...columnContainterProps}
           sx={{ width: "55%", margin: "10px", padding: "10px" }}
         >
-          <Typography variant="h4" sx={{ ...headerTextStyle }}>
-            {course.category} {" - "}{course.courseName}
-          </Typography>
-
           <Typography
             variant="body1"
             sx={{ color: "#414040ff", textAlign: "left", mt: 2 }}
@@ -232,7 +229,7 @@ function Course() {
             sx={{
               width: "100%",
               position: "sticky",
-              top: 20,
+              top: 100,
               borderRadius: "20px",
               boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
               border: "1px solid #e0e0e0",
@@ -299,7 +296,6 @@ function Course() {
                     state: {
                       courseId: course.courseId,
                       courseName: course.courseName,
-                      categoryName: course.category,
                     },
                   })
                 }
@@ -314,7 +310,7 @@ function Course() {
       {/* Introduce more course */}
       <Box {...rowContainterProps} sx={{ maxWidth: "1140px", margin: "auto" }}>
         {recomendCourse.map((course) => (
-          <CourseCard
+          <CourseRecommendCard
             key={course.title}
             imageSrc={getImageUrl(course.imageSrc)}
             title={course.title}

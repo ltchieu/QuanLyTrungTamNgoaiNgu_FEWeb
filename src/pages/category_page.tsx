@@ -1,275 +1,326 @@
-import React, { useState, useMemo } from "react";
 import {
   Box,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
-  Divider,
-  TextField,
   Checkbox,
-  FormGroup,
+  CircularProgress,
+  Container,
   FormControlLabel,
+  FormGroup,
+  Grid,
+  Link,
   Paper,
-  Alert,
+  Typography,
 } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { CourseGroupResponse } from "../model/course_model";
+import { useNavigate, useParams } from "react-router-dom";
+import { getCategoryDetail } from "../services/category_service";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CourseCommonCard from "../componets/course_common_card";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
-// ===== MOCK DATA (thay bằng API sau) =====
-const mockDanhMuc = [
-  {
-    id: 1,
-    name: "IELTS Foundation",
-    courses: [
-      { id: 101, name: "Writing Foundation", tuitionFee: 1500000 },
-      { id: 102, name: "Listening Basics", tuitionFee: 1300000 },
-      { id: 103, name: "Reading Mastery", tuitionFee: 1700000 },
-    ],
-  },
-  {
-    id: 2,
-    name: "IELTS Advanced",
-    courses: [
-      { id: 201, name: "Speaking Intensive", tuitionFee: 2000000 },
-      { id: 202, name: "Advanced Writing", tuitionFee: 2200000 },
-      { id: 203, name: "Full Mock Test", tuitionFee: 2500000 },
-    ],
-  },
-];
+type Props = {};
 
-export default function CoursePackageRegister() {
-  // ================== STATE ==================
-  const [selectedDanhMuc, setSelectedDanhMuc] = useState<number | "">("");
-  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // Thông tin học viên
-  const [studentInfo, setStudentInfo] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    note: "",
+const CategoryPage = (props: Props) => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [categoryDetail, setCategoryDetail] = useState<CourseGroupResponse>({
+    categoryId: "",
+    categoryName: "",
+    categoryLevel: "",
+    categoryDescription: "",
+    courses: [],
   });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
 
-  // ================== DERIVED ==================
-  const currentCourses = useMemo(() => {
-    return mockDanhMuc.find((dm) => dm.id === selectedDanhMuc)?.courses || [];
-  }, [selectedDanhMuc]);
+  // --- Các hàm xử lý ---
+  const allCourseIds = categoryDetail.courses.map((course) => course.courseId);
 
-  const totalFee = useMemo(() => {
-    return currentCourses
-      .filter((c) => selectedCourses.includes(c.id))
-      .reduce((sum, c) => sum + c.tuitionFee, 0);
-  }, [selectedCourses, currentCourses]);
+  const isAllSelected =
+    allCourseIds.length > 0 && selectedCourses.length === allCourseIds.length;
 
-  // ================== HANDLER ==================
-  const handleDanhMucChange = (e: any) => {
-    setSelectedDanhMuc(e.target.value);
-    setSelectedCourses([]);
-  };
-
-  const handleCourseToggle = (courseId: number) => {
-    setSelectedCourses((prev) =>
-      prev.includes(courseId)
-        ? prev.filter((id) => id !== courseId)
-        : [...prev, courseId]
+  // Xử lý khi toggle 1 khóa học
+  const handleCourseToggle = (courseId: string) => {
+    setSelectedCourses((prevSelected) =>
+      prevSelected.includes(courseId)
+        ? prevSelected.filter((id) => id !== courseId)
+        : [...prevSelected, courseId]
     );
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setStudentInfo((prev) => ({ ...prev, [name]: value }));
+  // Xử lý khi "Chọn tất cả"
+  const handleSelectAllToggle = () => {
+    if (isAllSelected) {
+      setSelectedCourses([]);
+    } else {
+      setSelectedCourses(allCourseIds);
+    }
   };
 
+  // Xử lý khi nhấn "Đăng ký"
   const handleRegister = () => {
-    setError(null);
-    setSuccess(null);
-
-    // ==== Kiểm tra dữ liệu ====
-    if (!studentInfo.fullName || !studentInfo.email || !studentInfo.phone) {
-      setError("Vui lòng điền đầy đủ thông tin bắt buộc.");
-      return;
-    }
-    if (!selectedDanhMuc) {
-      setError("Vui lòng chọn danh mục khóa học.");
-      return;
-    }
-    if (selectedCourses.length === 0) {
-      setError("Vui lòng chọn ít nhất một khóa học.");
-      return;
-    }
-
-    // ==== Giả lập gọi API ====
-    console.log({
-      ...studentInfo,
-      selectedDanhMuc,
-      selectedCourses,
-      totalFee,
-    });
-
-    setSuccess(
-      `🎉 Đăng ký thành công ${selectedCourses.length} khóa học với tổng học phí: ${totalFee.toLocaleString()}đ`
+    if (selectedCourses.length > 0) {
+      const courseIdsParam = selectedCourses.join(",");
+      navigate(
+      `/register?categoryId=${categoryDetail.categoryId}&courses=${courseIdsParam}`
     );
-
-    // reset form
-    setSelectedCourses([]);
-    setSelectedDanhMuc("");
-    setStudentInfo({
-      fullName: "",
-      email: "",
-      phone: "",
-      address: "",
-      note: "",
-    });
+    } else {
+      alert("Vui lòng chọn ít nhất một khóa học để đăng ký.");
+    }
   };
 
-  // ================== RENDER ==================
-  return (
-    <Box
-      sx={{
-        maxWidth: 900,
-        mx: "auto",
-        mt: 8,
-        p: 4,
-        bgcolor: "#fff",
-        borderRadius: 3,
-        boxShadow: 3,
-      }}
-    >
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Đăng ký khóa học trọn gói
-      </Typography>
-
-      {/* Thông báo */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
-
-      {/* ========== THÔNG TIN HỌC VIÊN ========== */}
-      <Paper variant="outlined" sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom fontWeight="bold">
-          Thông tin học viên
-        </Typography>
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns: "1fr 1fr",
-          }}
-        >
-          <TextField
-            label="Họ và tên *"
-            name="fullName"
-            value={studentInfo.fullName}
-            onChange={handleInputChange}
-            fullWidth
-          />
-          <TextField
-            label="Email *"
-            name="email"
-            value={studentInfo.email}
-            onChange={handleInputChange}
-            fullWidth
-          />
-          <TextField
-            label="Số điện thoại *"
-            name="phone"
-            value={studentInfo.phone}
-            onChange={handleInputChange}
-            fullWidth
-          />
-          <TextField
-            label="Địa chỉ"
-            name="address"
-            value={studentInfo.address}
-            onChange={handleInputChange}
-            fullWidth
-          />
-        </Box>
-        <TextField
-          sx={{ mt: 2 }}
-          label="Ghi chú"
-          name="note"
-          value={studentInfo.note}
-          onChange={handleInputChange}
-          multiline
-          rows={3}
-          fullWidth
-        />
-      </Paper>
-
-      {/* ========== DANH MỤC ========== */}
-      <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Chọn danh mục khóa học</InputLabel>
-        <Select
-          value={selectedDanhMuc}
-          onChange={handleDanhMucChange}
-          label="Chọn danh mục khóa học"
-        >
-          {mockDanhMuc.map((dm) => (
-            <MenuItem key={dm.id} value={dm.id}>
-              {dm.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      {/* ========== KHÓA HỌC ========== */}
-      {selectedDanhMuc && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Chọn khóa học trong danh mục:
-          </Typography>
-          <FormGroup>
-            {currentCourses.map((course) => (
-              <FormControlLabel
-                key={course.id}
-                control={
-                  <Checkbox
-                    checked={selectedCourses.includes(course.id)}
-                    onChange={() => handleCourseToggle(course.id)}
-                  />
-                }
-                label={`${course.name} - ${course.tuitionFee.toLocaleString()}đ`}
-              />
-            ))}
-          </FormGroup>
-        </Box>
-      )}
-
-      {/* ========== THÀNH TIỀN + NÚT XÁC NHẬN ========== */}
-      {selectedCourses.length > 0 && (
-        <>
-          <Divider sx={{ my: 3 }} />
-          <Typography variant="h6" fontWeight="bold">
-            Thành tiền:{" "}
-            <Box component="span" color="primary.main">
-              {totalFee.toLocaleString()}đ
-            </Box>
-          </Typography>
-        </>
-      )}
-
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mt: 4, px: 4, fontWeight: "bold" }}
-        onClick={handleRegister}
+  useEffect(() => {
+    setLoading(true);
+    const fetchCategoryDetail = async () => {
+      try {
+        const res = await getCategoryDetail(id);
+        setCategoryDetail(res);
+        setLoading(false);
+      } catch (err) {
+        setLoading(false);
+        console.error("Lỗi khi tải chi tiết danh mục:", err);
+      }
+    };
+    fetchCategoryDetail();
+  }, [id]);
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="50vh"
       >
-        Xác nhận đăng ký
-      </Button>
-    </Box>
+        <CircularProgress />
+        <Typography variant="h6" ml={2}>
+          Đang tải chi tiết danh mục...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!categoryDetail) {
+    return (
+      <Typography variant="h5" color="error" textAlign="center" mt={5}>
+        Không tìm thấy dữ liệu cho danh mục này.
+      </Typography>
+    );
+  }
+
+  return (
+    <>
+      <Grid container spacing={3} sx={{ mx: 10, my: 3 }}>
+        <Grid size={{ xs: 12, md: 9 }}>
+          <Container>
+            <Box textAlign="left">
+              {/* Tiêu đề, Mô tả, Stats */}
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                gutterBottom
+                sx={{ color: "rgba(26,29,175,1)" }}
+              >
+                {categoryDetail.categoryName}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 4, fontSize: "1.1rem" }}>
+                {categoryDetail.categoryDescription}
+              </Typography>{" "}
+            </Box>
+
+            {/* Phần Stats (Dữ liệu tĩnh) */}
+            <Grid container width="100%">
+              <Grid size={{ xs: 12, md: 11 }}>
+                <Grid container spacing={2} textAlign="left">
+                  <Grid size={{ xs: 12, md: 3 }}>
+                    <Box>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="text.primary"
+                      >
+                        10
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Năm kinh nghiệm giảng dạy tiếng Anh và đào tạo giáo viên
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 3 }}>
+                    <Box>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="text.primary"
+                      >
+                        95%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Phản hồi tích cực về khóa học, giáo viên, và các chuyên
+                        viên tư vấn
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 3 }}>
+                    <Box>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="text.primary"
+                      >
+                        20.000+
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Học viên theo học tại hệ thống Anh ngữ Simple – IELTS
+                        Power Up – TESOL Simple Education
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid size={{ xs: 12, md: 1 }}></Grid>
+            </Grid>
+          </Container>
+
+          <Grid container>
+            <Container maxWidth="lg" sx={{ py: 5, mt: 10 }}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                textAlign="center"
+                gutterBottom
+                sx={{ color: "#333" }}
+              >
+                Các khóa học IELTS thuộc {categoryDetail.categoryName}
+              </Typography>
+
+              <Box sx={{ mt: 4 }}>
+                {categoryDetail.courses.map((course) => (
+                  <CourseCommonCard key={course.courseId} course={course} />
+                ))}
+              </Box>
+            </Container>
+          </Grid>
+        </Grid>
+
+        {/* Hiển thị các khóa học */}
+        <Grid size={{ xs: 12, md: 3 }}>
+          <Paper
+            elevation={3}
+            sx={{
+              margin: "auto",
+              backgroundColor: "rgba(247, 74, 0, 1)", // Màu cam
+              py: 3,
+              px: 2,
+              borderRadius: 4,
+              position: "sticky",
+              top: 20,
+            }}
+          >
+            <Container maxWidth="md">
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                color="white"
+                gutterBottom
+              >
+                Đăng ký khóa học
+              </Typography>
+
+              {/* Box chứa các button chọn */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.5,
+                  my: 2,
+                }}
+              >
+                {/* Nút "Chọn tất cả" (Toggle) */}
+                <Button
+                  variant={isAllSelected ? "contained" : "outlined"}
+                  onClick={handleSelectAllToggle}
+                  sx={{
+                    borderRadius: "30px",
+                    fontWeight: "bold",
+                    // Style khi "Đã chọn" (contained)
+                    backgroundColor: isAllSelected ? "white" : "transparent",
+                    color: isAllSelected ? "rgba(247, 74, 0, 1)" : "white",
+                    // Style khi "Chưa chọn" (outlined)
+                    borderColor: "white",
+                    "&:hover": {
+                      backgroundColor: isAllSelected
+                        ? "#f0f0f0"
+                        : "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  {isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                </Button>
+
+                {/* Danh sách các khóa học (dạng Button) */}
+                {categoryDetail.courses.map((course) => {
+                  const isSelected = selectedCourses.includes(course.courseId);
+                  return (
+                    <Button
+                      key={course.courseId}
+                      variant="contained"
+                      onClick={() => handleCourseToggle(course.courseId)}
+                      sx={{
+                        borderRadius: "30px",
+                        fontWeight: "bold",                        
+                        textAlign: "left",
+                        backgroundColor: isSelected ? "#0074FC" : "white",
+                        color: isSelected ? "white": "rgba(247, 74, 0, 1)" ,
+                        borderColor: "white",
+                        py: 2,
+                        "&:hover": {
+                          backgroundColor: isSelected
+                            ? "#f0f0f0"
+                            : "rgba(255, 255, 255, 0.1)",
+                          borderColor: "white",
+                        },
+                      }}
+                    >
+                      {course.courseName}
+                    </Button>
+                  );
+                })}
+              </Box>
+
+              {/* Nút Đăng ký */}
+              <Button
+                variant="contained"
+                onClick={handleRegister}
+                disabled={selectedCourses.length === 0}
+                sx={{
+                  backgroundColor: "white",
+                  color: "rgba(247, 74, 0, 1)",
+                  borderRadius: "30px",
+                  fontWeight: "bold",
+                  padding: "10px 26px",
+                  fontSize: "1rem",
+                  width: "100%",
+                  mt: 2,
+                  "&:hover": {
+                    backgroundColor: "#003E83",
+                    color: "white",
+                  },
+                  "&.Mui-disabled": {
+                    backgroundColor: "rgba(255,255,255,0.5)",
+                    color: "rgba(247, 74, 0, 0.7)",
+                  },
+                }}
+              >
+                Đăng ký ngay ({selectedCourses.length})
+              </Button>
+            </Container>
+          </Paper>
+        </Grid>
+      </Grid>
+    </>
   );
-}
+};
+
+export default CategoryPage;

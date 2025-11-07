@@ -8,7 +8,6 @@ export interface Objective {
   objectiveName: string;
 }
 
-//Tài liệu của module
 export interface Document {
   documentId: number;
   fileName: string;
@@ -17,13 +16,12 @@ export interface Document {
   image: string;
 }
 
-//Nội dung trong module
+
 export interface ModuleContent {
   id: number;
   contentName: string;
 }
 
-//Mỗi module trong khóa học
 export interface Module {
   moduleId: number;
   moduleName: string;
@@ -31,11 +29,6 @@ export interface Module {
   contents: ModuleContent[];
   documents: Document[];
 }
-
-// export interface Category {
-//   categoryId: number;
-//   categoryName: string;
-// }
 
 //Toàn bộ khóa học
 export interface CourseModel {
@@ -47,10 +40,8 @@ export interface CourseModel {
   video: string;
   objectives: Objective[];
   modules: Module[];
-  category: string;
 }
 
-//Response từ API
 export interface CourseResponse {
   code: number;
   data: CourseModel;
@@ -59,4 +50,22 @@ export interface CourseResponse {
 export interface CourseCategoryResponse {
   id: number;
   name: string;
+}
+
+export interface ActiveCourseResponse {
+  courseId: string;
+  courseName: string;
+  tuitionFee: number;
+  entryLevel: string;
+  targetLevel: string;
+  description: string;
+  image: string;
+}
+
+export interface CourseGroupResponse {
+  categoryId: string;
+  categoryName: string;
+  categoryLevel: string;
+  categoryDescription: string;
+  courses: ActiveCourseResponse[];
 }

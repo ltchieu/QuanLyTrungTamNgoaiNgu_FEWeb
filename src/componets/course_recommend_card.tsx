@@ -16,7 +16,7 @@ export interface CourseCardProps {
   summaryItems: string[];
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({
+const CourseRecommendCard: React.FC<CourseCardProps> = ({
   imageSrc,
   title,
   summaryItems,
@@ -87,4 +87,4 @@ const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-export default CourseCard;
+export default CourseRecommendCard;
