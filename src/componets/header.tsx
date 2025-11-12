@@ -240,13 +240,26 @@ const Header: React.FC = () => {
                 <DropBox
                   label={"Phương pháp học"}
                   items={phuongPhapHocItems}
+                  isMobile={isMobile}
                 ></DropBox>
-                <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
+                <DropBox
+                  label={"Khóa học"}
+                  items={khoaHocItems}
+                  isMobile={isMobile}
+                ></DropBox>
                 <Button sx={dropboxProps} onClick={() => {}}>
                   Lịch khai giảng
                 </Button>
-                <DropBox label={"Blog"} items={blogItems}></DropBox>
-                <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
+                <DropBox
+                  label={"Blog"}
+                  items={blogItems}
+                  isMobile={isMobile}
+                ></DropBox>
+                <DropBox
+                  label={"Về chúng tôi"}
+                  items={aboutUsItems}
+                  isMobile={isMobile}
+                ></DropBox>
               </Box>
               <Box
                 display="flex"
@@ -254,23 +267,34 @@ const Header: React.FC = () => {
                 alignItems="center"
                 sx={{ gap: 2 }}
               >
-                <Button
-                  sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
-                  onClick={() => {
-                    navigate("/login");
-                  }}
-                >
-                  Login
-                </Button>
-
-                <Button
-                  sx={{ ...authButtonProps, backgroundColor: "#001b86" }}
-                  onClick={() => {
-                    navigate("/signup");
-                  }}
-                >
-                  Sign up
-                </Button>
+                {isAuthenticated ? (
+                  <Button
+                    sx={{
+                      ...authButtonProps,
+                      backgroundColor: "#ea4213",
+                      width: "auto",
+                      px: 2,
+                    }}
+                    onClick={() => {
+                      logout();
+                      toggleDrawer(false)();
+                    }}
+                  >
+                    Logout
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
+                      onClick={() => {
+                        navigate("/login");
+                        toggleDrawer(false)();
+                      }}
+                    >
+                      Login
+                    </Button>
+                  </>
+                )}
               </Box>
             </Drawer>
           </>

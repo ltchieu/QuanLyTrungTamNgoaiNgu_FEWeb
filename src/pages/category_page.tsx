@@ -110,7 +110,7 @@ const CategoryPage = (props: Props) => {
 
   return (
     <>
-      <Grid container spacing={3} sx={{ mx: 10, my: 3 }}>
+      <Grid container spacing={3} sx={{ mx: {xs: 1, md: 10}, my: 3 }}>
         <Grid size={{ xs: 12, md: 9 }}>
           <Container>
             <Box textAlign="left">
@@ -209,7 +209,7 @@ const CategoryPage = (props: Props) => {
             elevation={3}
             sx={{
               margin: "auto",
-              backgroundColor: "rgba(247, 74, 0, 1)", // Màu cam
+              backgroundColor: "rgba(247, 74, 0, 1)",
               py: 3,
               px: 2,
               borderRadius: 4,
@@ -236,17 +236,14 @@ const CategoryPage = (props: Props) => {
                   my: 2,
                 }}
               >
-                {/* Nút "Chọn tất cả" (Toggle) */}
                 <Button
                   variant={isAllSelected ? "contained" : "outlined"}
                   onClick={handleSelectAllToggle}
                   sx={{
                     borderRadius: "30px",
                     fontWeight: "bold",
-                    // Style khi "Đã chọn" (contained)
                     backgroundColor: isAllSelected ? "white" : "transparent",
                     color: isAllSelected ? "rgba(247, 74, 0, 1)" : "white",
-                    // Style khi "Chưa chọn" (outlined)
                     borderColor: "white",
                     "&:hover": {
                       backgroundColor: isAllSelected
@@ -259,7 +256,7 @@ const CategoryPage = (props: Props) => {
                   {isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                 </Button>
 
-                {/* Danh sách các khóa học (dạng Button) */}
+                {/* Danh sách các khóa học */}
                 {categoryDetail.courses.map((course) => {
                   const isSelected = selectedCourses.includes(course.courseId);
                   return (

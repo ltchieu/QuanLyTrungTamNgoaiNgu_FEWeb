@@ -161,15 +161,28 @@ const CourseCommonCard: React.FC<CourseCardProps> = ({ course }) => {
                 </List>
               </Grid>
 
-              <Grid size={{ md: 1 }}>
+              <Grid size={{ xs: 12, md: 1 }}>
                 <Divider
                   orientation="vertical"
                   variant="middle"
                   sx={{
+                    display: { xs: "none", md: "block" },
                     borderRightWidth: "1px",
                     borderColor: "black",
+                    height: "100%",
                   }}
-                ></Divider>
+                />
+
+                <Divider
+                  orientation="horizontal"
+                  variant="middle"
+                  sx={{
+                    display: { xs: "block", md: "none" },
+                    borderBottomWidth: "1px",
+                    borderColor: "black",
+                    width: "100%",
+                  }}
+                />
               </Grid>
 
               {/* Chi tiết bên phải */}

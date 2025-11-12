@@ -8,4 +8,5 @@ export interface SelectItem {
 export interface SelectProps {
   label: string;
   items: SelectItem[];
+  isMobile?: boolean
 }

@@ -39,7 +39,7 @@ const IntroduceTeacher = () => {
     gap: 2,
   };
   return (
-    <Box sx={{ backgroundColor: "#E5F2FF", width: "100%" }}>
+    <Box sx={{ backgroundColor: "#E5F2FF", width: "95%", borderRadius: 3 }}>
       <Box sx={{ maxWidth: "1400px", margin: "auto" }}>
         <Box sx={{ margin: { xs: "0px 20px", md: "0px 200px" } }}>
           <Typography variant="h4" sx={{ fontWeight: "bold", mt: 4 }}>
@@ -56,14 +56,15 @@ const IntroduceTeacher = () => {
             flexDirection: { xs: "column", md: "row" },
             alignItems: { xs: "center", md: "flex-start" },
             gap: { xs: 5, md: 0 },
+            mr: { xs: 0, md: 20 },
+            ml: { xs: 2, md: 0 },
+            mb: 3
           }}
         >
           {/* Cột 1: Thông tin giới thiệu */}
           <Box
             {...columnContainer}
             sx={{
-              mr: { xs: 0, md: 20 },
-              ml: {xs: 2, md: 0},
               width: { xs: "100%", md: "100%" },
               textAlign: "left",
               overflow: "visible",
