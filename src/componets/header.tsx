@@ -1,11 +1,17 @@
 import {
   AppBar,
+  Avatar,
   Box,
   Button,
+  Divider,
   Drawer,
   IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   SxProps,
   Toolbar,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -18,12 +24,21 @@ import { getCourseName } from "../services/course_services";
 import { SelectItem } from "../model/select_item";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { faBook, faSchool } from "@fortawesome/free-solid-svg-icons";
 
 const Header: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [khoaHocItems, setKhoaHocItems] = useState<SelectItem[]>([]);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEl);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -67,12 +82,32 @@ const Header: React.FC = () => {
   const toggleDrawer = (open: boolean) => () => serDrawerOpen(open);
   const navigate = useNavigate();
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Hàm helper để điều hướng và đóng menu
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    handleMenuClose();
+  };
+
+  // Hàm helper để logout và đóng menu
+  const handleLogout = () => {
+    logout();
+    handleMenuClose();
+  };
+
   const phuongPhapHocItems = [
     { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/about" },
     { label: "Tư duy PAW – IELTS Writing", value: "about", link: "/about" },
     {
       label: "Tư duy SWITCH – IELTS Speaking",
-      value: "contact",
+      value: "mindset",
       link: "/contact",
     },
     {
@@ -85,22 +120,22 @@ const Header: React.FC = () => {
   const blogItems = [
     {
       label: "Tự học IELTS",
-      value: "contact",
+      value: "learning",
       link: "/contact",
     },
     {
       label: "Về IELTS",
-      value: "contact",
+      value: "about_IELTS",
       link: "/contact",
     },
     {
       label: "Bài mẫu Writing",
-      value: "contact",
+      value: "pattern",
       link: "/contact",
     },
     {
       label: "Tin tức",
-      value: "contact",
+      value: "news",
       link: "/contact",
     },
   ];
@@ -108,12 +143,12 @@ const Header: React.FC = () => {
   const aboutUsItems = [
     {
       label: "Về chúng tôi",
-      value: "contact",
+      value: "about_us",
       link: "/contact",
     },
     {
       label: "Kết quả học viên",
-      value: "contact",
+      value: "result",
       link: "/contact",
     },
     {
@@ -123,17 +158,17 @@ const Header: React.FC = () => {
     },
     {
       label: "Workshop",
-      value: "contact",
+      value: "workshop",
       link: "/contact",
     },
     {
       label: "Lộ trình tự học IELTS",
-      value: "contact",
+      value: "path",
       link: "/contact",
     },
     {
       label: "Quyền lợi học viên IPU",
-      value: "contact",
+      value: "quyenloi",
       link: "/contact",
     },
   ];
@@ -197,14 +232,107 @@ const Header: React.FC = () => {
             </Box>
             <Box>
               {isAuthenticated ? (
-                <Button
-                  sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
-                  onClick={() => {
-                    navigate("/login");
-                  }}
-                >
-                  Logout
-                </Button>
+                <>
+                  <IconButton onClick={handleMenuClick} size="small">
+                    {/* Lấy ảnh từ user.avatar hoặc chữ cái đầu của tên */}
+                    <Avatar sx={{ width: 34, height: 34 }}>
+                      H
+                    </Avatar>
+                  </IconButton>
+
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={menuOpen}
+                    onClose={handleMenuClose}
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: "visible",
+                        filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                        mt: 1.5,
+                        width: 300,
+                        borderRadius: "16px",
+                        "& .MuiAvatar-root": {
+                          width: 40,
+                          height: 40,
+                          ml: -0.5,
+                          mr: 1.5,
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    {/* Header của Menu */}
+                    <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
+                      <Avatar>H</Avatar>
+                      <Box>
+                        <Typography variant="body1" fontWeight="bold">
+                          Công Hiếu
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          @c4_conghiu779
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Các link của Học viên */}
+                    <MenuItem
+                      onClick={() => handleNavigate("/student/schedule")}
+                    >
+                      <ListItemIcon>
+                        <FontAwesomeIcon icon={faCalendar} />
+                      </ListItemIcon>
+                      Lịch học của bạn
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() =>
+                        handleNavigate("/student/registered-courses")
+                      }
+                    >
+                      <ListItemIcon>
+                        <AppRegistrationIcon fontSize="small" />
+                      </ListItemIcon>
+                      Khóa học đã đăng ký
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleNavigate("/student/active-courses")}
+                    >
+                      <ListItemIcon>
+                        <FontAwesomeIcon icon={faSchool} />
+                      </ListItemIcon>
+                      Khóa đang học
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleNavigate("/student/documents")}
+                    >
+                      <ListItemIcon>
+                        <FontAwesomeIcon icon={faBook} />
+                      </ListItemIcon>
+                      Tài liệu
+                    </MenuItem>
+
+                    <Divider />
+
+                    {/* Quản lý tài khoản & Đăng xuất */}
+                    <MenuItem
+                      onClick={() => handleNavigate("/account/profile")}
+                    >
+                      <ListItemIcon>
+                        <ManageAccountsIcon fontSize="small" />
+                      </ListItemIcon>
+                      Quản lý tài khoản
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      <ListItemIcon>
+                        <LogoutIcon fontSize="small" />
+                      </ListItemIcon>
+                      Đăng xuất
+                    </MenuItem>
+                  </Menu>
+                </>
               ) : (
                 <Button
                   sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}

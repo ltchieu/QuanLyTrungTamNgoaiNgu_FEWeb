@@ -175,7 +175,7 @@ const DropBox: React.FC<SelectProps> = ({ label, items, isMobile = false }) => {
                       borderRadius: isMobile ? "0" : "8px",
                       zIndex: 1000,
                       minWidth: isMobile ? "100%" : "200px",
-                      width: "100%",
+                      width: isMobile ? "100%" : "auto",
                     }}
                   >
                     {item.subItems.map((subItem) => (
