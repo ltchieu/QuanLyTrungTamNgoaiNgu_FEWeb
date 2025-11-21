@@ -5,6 +5,7 @@ import thumnailCourse3 from "../images/thumbnail-khoa-hoc-ielts-5.0-va-5.5-768x4
 import {
   faCircleCheck,
   faCircleExclamation,
+  faMedal,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -128,20 +129,41 @@ function Course() {
       {/* Course detail */}
       <Box
         {...rowContainterProps}
-        sx={{ flexDirection: { xs: "column", md: "row" } }}
+        sx={{
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: { xs: "center", md: "stretch"},
+          gap: 2,
+          margin: "0 auto",
+          padding: "10px",
+        }}
       >
         {/* First column */}
         <Box
           {...columnContainterProps}
-          sx={{ width: "55%", margin: "10px", padding: "10px" }}
+          sx={{
+            width: { xs: "95%", md: "55%" },
+            margin: "10px",
+            padding: "10px",
+            order: { xs: 2, md: 1 },
+          }}
         >
+          <Typography
+            variant="h4"
+            sx={{
+              color: "#414040ff",
+              textAlign: "left",
+              mt: 2,
+              fontWeight: "bold",
+            }}
+          >
+            {course.category} - {course.courseName}
+          </Typography>
+
           <Typography
             variant="body1"
             sx={{ color: "#414040ff", textAlign: "left", mt: 2 }}
           >
-            Khóa học IELTS Writing và Speaking tập trung luyện thi chuyên sâu ở
-            2 kỹ năng này. Giảng viên sẽ củng cố kiến thức – cá nhân hóa nội
-            dung bài giảng để các bạn học viên đạt được band điểm IELTS mục tiêu
+            {course.description}
           </Typography>
 
           {/* Hiển thị số lượng học viên */}
@@ -149,12 +171,9 @@ function Course() {
             {...rowContainterProps}
             sx={{ alignItems: "center", mt: 2, justifyContent: "flex-start" }}
           >
-            <FontAwesomeIcon
-              icon={faUserGraduate}
-              style={{ color: "#FD3F00" }}
-            />
+            <FontAwesomeIcon icon={faMedal} style={{ color: "#FD3F00" }} />
             <Typography variant="body1" sx={{ ml: 1 }}>
-              300+ <span> học viên đã học</span>
+              Level: {course.level}
             </Typography>
           </Box>
 
@@ -212,7 +231,6 @@ function Course() {
               variant="body1"
               sx={{ mt: 2, color: "rgb(44 43 43 / 78%)" }}
             >
-              <span>{course.numberOfSessions} </span> buổi học –{" "}
               <span>{course.studyHours}</span>h giờ học trên lớp
             </Typography>
           </Box>
@@ -223,12 +241,18 @@ function Course() {
         </Box>
 
         {/* Second column */}
-        <Box sx={{ width: "23%", margin: "10px" }}>
+        <Box
+          sx={{
+            width: { xs: "97%", md: "23%" },
+            margin: "10px",
+            order: { xs: -1, md: 2 },
+          }}
+        >
           <Box
             {...columnContainterProps}
             sx={{
               width: "100%",
-              position: "sticky",
+              position: { xs: "static", md: "sticky" },
               top: 100,
               borderRadius: "20px",
               boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
@@ -308,7 +332,16 @@ function Course() {
       </Box>
 
       {/* Introduce more course */}
-      <Box {...rowContainterProps} sx={{ maxWidth: "1140px", margin: "auto" }}>
+      <Box
+        sx={{
+          maxWidth: "1140px",
+          margin: "auto",
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         {recomendCourse.map((course) => (
           <CourseRecommendCard
             key={course.title}

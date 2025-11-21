@@ -38,6 +38,9 @@ export interface CourseModel {
   tuitionFee: number;
   numberOfSessions: number;
   video: string;
+  description: string;
+  category: string;
+  level: string;
   objectives: Objective[];
   modules: Module[];
 }
