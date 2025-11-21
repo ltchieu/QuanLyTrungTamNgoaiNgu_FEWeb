@@ -18,5 +18,5 @@ export function getSuggestCourse(id?: string){
 }
 
 export function getImageUrl(fileName: string): string{
-  return `${axiosClient.defaults.baseURL}/files/${fileName}`;
+  return `${axiosClient.defaults.baseURL}files/${fileName}`;
 }

@@ -2,13 +2,18 @@ import { axiosClient } from "../api/axios_client";
 import { ApiResponse } from "../model/api_respone";
 import { LoginRequest, LoginResponse, SignupRequest } from "../model/auth_model";
 
+// --- LOGIN SERVICE ---
 export async function loginService(
   loginData: LoginRequest
 ): Promise<LoginResponse> {
   try {
     const res = await axiosClient.post<ApiResponse<LoginResponse>>(
-      "auth/login",
-      loginData
+      "/auth/login",
+      loginData,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
     );
 
     if (res.data && res.data.code === 1000 && res.data.data) {
@@ -19,8 +24,8 @@ export async function loginService(
       );
     }
   } catch (err: any) {
-     if (err.response) {
-      console.log("❗ Server returned:", err.response.status, err.response.data);
+    if (err.response) {
+      console.log("Server returned:", err.response.status, err.response.data);
     }
     console.error("Login API error:", err.response?.data || err.message);
     throw new Error(
@@ -29,7 +34,7 @@ export async function loginService(
   }
 }
 
-//Đăng ký tài khoản mới
+// --- SIGNUP SERVICE ---
 export async function signupService(signupData: SignupRequest): Promise<void> {
   try {
     const res = await axiosClient.post("/auth/signup", signupData);
@@ -39,11 +44,12 @@ export async function signupService(signupData: SignupRequest): Promise<void> {
       throw new Error(res.data.message || "Đăng ký thất bại.");
     }
   } catch (err: any) {
-    throw err;
+    // Ném lỗi ra để component Auth bắt được và hiển thị
+    throw err; 
   }
 }
 
-//Resend mail xác thực
+// --- RESEND EMAIL SERVICE ---
 export function resendVerificationEmail(email: string, type: string = 'EMAIL_VERIFICATION') {
   return axiosClient.post("/auth/resend", null, {
     params: {

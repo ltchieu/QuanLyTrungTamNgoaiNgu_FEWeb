@@ -21,9 +21,11 @@ import { useEffect, useState } from "react";
 import { LoginRequest, SignupRequest } from "../model/auth_model";
 import { useAuth } from "../hook/useAuth";
 import {
+  loginService,
   resendVerificationEmail,
   signupService,
 } from "../services/auth_service";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme({
   palette: {
@@ -88,8 +90,8 @@ const theme = createTheme({
 });
 
 const Login = () => {
-  const [isSignUpActive, setIsSignUpActive] = useState(false);
-  const { login, loading, error } = useAuth();
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
 
   const [loginValue, setLoginValue] = useState<LoginRequest>({
     identifier: "",
@@ -101,10 +103,12 @@ const Login = () => {
     password: "",
   });
 
+  const [isSignUpActive, setIsSignUpActive] = useState(false);
   const [isEnableLoginBtn, setIsEnableLoginBtn] = useState<boolean>(false);
   const [isEnableSignupBtn, setEnableSignupBtn] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const [showResendButton, setShowResendButton] = useState<boolean>(false);
   // State loading cho nút Resend
@@ -166,9 +170,33 @@ const Login = () => {
   };
 
   const handleLoginSubmit = async (event: React.FormEvent) => {
+    event.preventDefault(); // Ngăn reload trang
+    setLoading(true);
     setIsSuccess(false);
     setErrorMessage(null);
-    await login(loginValue);
+
+    try {
+      //Gọi Service (Đã cấu hình withCredentials)
+      const data = await loginService(loginValue);
+
+      //Lấy dữ liệu trả về (Access Token & Info)
+      const accessToken = data?.accessToken;
+      const role = data?.role;
+      const userId = data?.userId; 
+
+      //Lưu vào Context
+      setAuth({ userId, role, accessToken });
+
+      //Chuyển hướng
+      navigate("/", { replace: true });
+
+    } catch (err: any) {
+      const backendMessage = err.message;
+      setErrorMessage(backendMessage || "Đăng nhập thất bại.");
+      console.log("Login failed:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
@@ -202,7 +230,7 @@ const Login = () => {
     try {
       await resendVerificationEmail(signupValue.email, "EMAIL_VERIFICATION");
       setResendMessage("Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư.");
-      setShowResendButton(false); // Ẩn nút sau khi gửi thành công
+      setShowResendButton(false);
     } catch (error: any) {
       console.error(
         "Resend email error:",
@@ -457,10 +485,10 @@ const Login = () => {
               </Button>
             </Box>
           </Box>
-          {error && (
+          {errorMessage && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="h6" color="error">
-                {error}
+                {errorMessage}
               </Typography>
             </Box>
           )}

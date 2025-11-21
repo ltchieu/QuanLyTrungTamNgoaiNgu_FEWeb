@@ -40,7 +40,8 @@ const CourseRecommendCard: React.FC<CourseCardProps> = ({
           alt={title}
           sx={{
             width: "100%",
-            height: "auto",
+            height: "auto", 
+            objectFit: "cover",
             display: "block",
             borderRadius: "25px",
           }}
@@ -48,7 +49,7 @@ const CourseRecommendCard: React.FC<CourseCardProps> = ({
       </Box>
 
       {/* Phần nội dung text (tên và danh sách) */}
-      <Box sx={{ padding: "20px" }}>
+      <Box sx={{ padding: "20px", flexGrow: 1 }}>
         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
           {title}
         </Typography>
@@ -66,7 +67,7 @@ const CourseRecommendCard: React.FC<CourseCardProps> = ({
       </Box>
 
       {/* Button */}
-      <Box sx={{mb: 2}}>
+      <Box sx={{ mb: 2 }}>
         <Button
           sx={{
             backgroundColor: "#FF4500",
@@ -81,7 +82,10 @@ const CourseRecommendCard: React.FC<CourseCardProps> = ({
               backgroundColor: "#003E83",
             },
           }}
-        > Tìm hiểu thêm</Button>
+        >
+          {" "}
+          Tìm hiểu thêm
+        </Button>
       </Box>
     </Box>
   );

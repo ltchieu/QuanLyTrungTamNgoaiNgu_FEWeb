@@ -24,18 +24,25 @@ import { getCourseName } from "../services/course_services";
 import { SelectItem } from "../model/select_item";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
-import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import LogoutIcon from '@mui/icons-material/Logout';
+import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { faBook, faSchool } from "@fortawesome/free-solid-svg-icons";
+import { getNameAndEmail } from "../services/user_service";
+import { NameAndEmail } from "../model/user_model";
+import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 const Header: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, logout, user } = useAuth();
+  const { auth, logout } = useAuth(); 
+  const axiosPrivate = useAxiosPrivate();
+  const isAuthenticated = !!auth?.accessToken;
+
   const [khoaHocItems, setKhoaHocItems] = useState<SelectItem[]>([]);
+  const [nameAndEmail, setNameAndEmail] = useState<NameAndEmail | null>(null);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
@@ -45,6 +52,7 @@ const Header: React.FC = () => {
       setLoading(true);
       try {
         const res = await getCourseName();
+
         const apiData: CourseGroupResponse[] = res.data.data;
 
         if (Array.isArray(apiData)) {
@@ -58,6 +66,7 @@ const Header: React.FC = () => {
               link: `/course/${course.courseId}`,
             })),
           }));
+
           setKhoaHocItems(formattedData);
         } else {
           console.error("Dữ liệu nhận được không phải là mảng:", apiData);
@@ -74,12 +83,41 @@ const Header: React.FC = () => {
     fetchCourseData();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const fetchUserInfo = async () => {
+      try {
+        const data = await getNameAndEmail(axiosPrivate);
+
+        if (isMounted) {
+          setNameAndEmail(data);
+        }
+      } catch (err: any) {
+        console.error("Lỗi lấy thông tin user:", err);
+      }
+    };
+
+    // Chỉ gọi khi đã có accessToken
+    if (auth?.accessToken) {
+      fetchUserInfo();
+    } else {
+      setNameAndEmail(null);
+    }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [auth?.accessToken, axiosPrivate]);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   //Drawer control
-  const [drawerOpen, serDrawerOpen] = React.useState(false);
-  const toggleDrawer = (open: boolean) => () => serDrawerOpen(open);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
   const navigate = useNavigate();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -97,8 +135,9 @@ const Header: React.FC = () => {
   };
 
   // Hàm helper để logout và đóng menu
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    setDrawerOpen(false);
     handleMenuClose();
   };
 
@@ -235,9 +274,7 @@ const Header: React.FC = () => {
                 <>
                   <IconButton onClick={handleMenuClick} size="small">
                     {/* Lấy ảnh từ user.avatar hoặc chữ cái đầu của tên */}
-                    <Avatar sx={{ width: 34, height: 34 }}>
-                      H
-                    </Avatar>
+                    <Avatar sx={{ width: 34, height: 34 }}>H</Avatar>
                   </IconButton>
 
                   <Menu
@@ -268,10 +305,10 @@ const Header: React.FC = () => {
                       <Avatar>H</Avatar>
                       <Box>
                         <Typography variant="body1" fontWeight="bold">
-                          Công Hiếu
+                          {nameAndEmail?.name || "Học viên"}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          @c4_conghiu779
+                          {nameAndEmail?.email || "@c4_conghiu779"}
                         </Typography>
                       </Box>
                     </Box>
@@ -336,7 +373,7 @@ const Header: React.FC = () => {
               ) : (
                 <Button
                   sx={{ ...authButtonProps, backgroundColor: "#ea4213" }}
-                  onClick={logout}
+                  onClick={() => navigate("/login")}
                 >
                   Login
                 </Button>
