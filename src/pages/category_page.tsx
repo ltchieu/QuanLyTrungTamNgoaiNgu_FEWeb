@@ -1,23 +1,17 @@
 import {
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Container,
-  FormControlLabel,
-  FormGroup,
   Grid,
-  Link,
   Paper,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CourseGroupResponse } from "../model/course_model";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCategoryDetail } from "../services/category_service";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CourseCommonCard from "../componets/course_common_card";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 type Props = {};
 
@@ -128,7 +122,7 @@ const CategoryPage = (props: Props) => {
               </Typography>{" "}
             </Box>
 
-            {/* Phần Stats (Dữ liệu tĩnh) */}
+            {/* Phần Stats */}
             <Grid container width="100%">
               <Grid size={{ xs: 12, md: 11 }}>
                 <Grid container spacing={2} textAlign="left">
@@ -196,7 +190,7 @@ const CategoryPage = (props: Props) => {
 
               <Box sx={{ mt: 4 }}>
                 {categoryDetail.courses.map((course) => (
-                  <CourseCommonCard key={course.courseId} course={course} />
+                  <CourseCommonCard key={course.courseId} course={course} categoryId={Number(categoryDetail.categoryId)} />
                 ))}
               </Box>
             </Container>

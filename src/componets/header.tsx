@@ -63,7 +63,7 @@ const Header: React.FC = () => {
             subItems: category.courses.map((course) => ({
               label: course.courseName,
               value: course.courseId.toString(),
-              link: `/course/${course.courseId}`,
+              link: `/course/${course.courseId}?categoryId=${category.categoryId}`,
             })),
           }));
 
@@ -120,6 +120,12 @@ const Header: React.FC = () => {
   const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
   const navigate = useNavigate();
 
+  const getFirstLetterOfName = (fullName: string) => {
+    if (!fullName) return "";
+    var name = fullName.split(" ").reverse()[0];
+    return name.charAt(0).toUpperCase();
+  }
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -140,21 +146,6 @@ const Header: React.FC = () => {
     setDrawerOpen(false);
     handleMenuClose();
   };
-
-  const phuongPhapHocItems = [
-    { label: "TRUE Grammar – Ngữ pháp", value: "home", link: "/about" },
-    { label: "Tư duy PAW – IELTS Writing", value: "about", link: "/about" },
-    {
-      label: "Tư duy SWITCH – IELTS Speaking",
-      value: "mindset",
-      link: "/contact",
-    },
-    {
-      label: "SR & AR – phương pháp độc quyền",
-      value: "contact",
-      link: "/contact",
-    },
-  ];
 
   const blogItems = [
     {
@@ -257,10 +248,6 @@ const Header: React.FC = () => {
         {!isMobile && (
           <>
             <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
-              <DropBox
-                label={"Phương pháp học"}
-                items={phuongPhapHocItems}
-              ></DropBox>
               <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
 
               <Button sx={dropboxProps} onClick={() => {}}>
@@ -274,7 +261,7 @@ const Header: React.FC = () => {
                 <>
                   <IconButton onClick={handleMenuClick} size="small">
                     {/* Lấy ảnh từ user.avatar hoặc chữ cái đầu của tên */}
-                    <Avatar sx={{ width: 34, height: 34 }}>H</Avatar>
+                    <Avatar sx={{ width: 34, height: 34 }}>{getFirstLetterOfName(nameAndEmail?.name || "H")}</Avatar>
                   </IconButton>
 
                   <Menu
@@ -302,7 +289,7 @@ const Header: React.FC = () => {
                   >
                     {/* Header của Menu */}
                     <Box sx={{ p: 2, display: "flex", alignItems: "center" }}>
-                      <Avatar>H</Avatar>
+                      <Avatar>{getFirstLetterOfName(nameAndEmail?.name || "H")}</Avatar>
                       <Box>
                         <Typography variant="body1" fontWeight="bold">
                           {nameAndEmail?.name || "Học viên"}
@@ -402,11 +389,6 @@ const Header: React.FC = () => {
                   gap: 1,
                 }}
               >
-                <DropBox
-                  label={"Phương pháp học"}
-                  items={phuongPhapHocItems}
-                  isMobile={isMobile}
-                ></DropBox>
                 <DropBox
                   label={"Khóa học"}
                   items={khoaHocItems}

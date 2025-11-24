@@ -43,6 +43,7 @@ export interface CourseModel {
   level: string;
   objectives: Objective[];
   modules: Module[];
+  classInfos: ClassInfo[];
 }
 
 export interface CourseResponse {
@@ -71,4 +72,20 @@ export interface CourseGroupResponse {
   categoryLevel: string;
   categoryDescription: string;
   courses: ActiveCourseResponse[];
+}
+
+export interface ClassInfo {
+  classId: number;
+  className: string;
+  courseName: string;
+  roomName: string;
+  instructorName: string;
+  startDate: string;
+  endDate: string | null;
+  startTime: string;
+  endTime: string;
+  schedulePattern: string;
+  status: boolean;
+  maxCapacity: number | null;
+  currentEnrollment: number | null;
 }

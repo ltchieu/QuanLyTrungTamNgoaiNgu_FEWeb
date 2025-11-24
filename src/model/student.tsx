@@ -1,13 +1,11 @@
-export interface HocVienDto {
-  maHocVien: string;
-  hoTen: string;
-  ngaySinh: string;
-  gioiTinh: "Nam" | "Nữ";
-  diaChi: string;
-  soDienThoai: string;
+export interface StudentInfoResponse {
+  studentId: number;
+  name: string;
+  dateOfBirth: string; 
+  gender: boolean;
+  jobs: string;
   email: string;
-  ngheNghiep?: string;
-  trinhDo?: string; 
-  anhDaiDien?: string;
+  phoneNumber: string;
+  address: string;
+  image: string;
 }
-

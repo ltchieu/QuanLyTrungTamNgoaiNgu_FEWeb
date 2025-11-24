@@ -4,16 +4,29 @@ import thumnailCourse2 from "../images/thumbnail-khoa-hoc-ielts-cap-toc-768x403.
 import thumnailCourse3 from "../images/thumbnail-khoa-hoc-ielts-5.0-va-5.5-768x403.jpg";
 import {
   faCircleCheck,
-  faCircleExclamation,
   faMedal,
-  faUserGraduate,
+  faCalendarAlt,
+  faClock,
+  faChalkboardTeacher,
+  faDoorOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, BoxProps, Button, Typography } from "@mui/material";
+import {
+  Box,
+  BoxProps,
+  Button,
+  Typography,
+  Divider,
+  Chip,
+  RadioGroup,
+  Paper,
+  Radio,
+  Stack,
+} from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
 import { CourseCardProps } from "../componets/course_recommend_card";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getCourseDetail,
   getImageUrl,
@@ -24,16 +37,22 @@ import CourseRecommendCard from "../componets/course_recommend_card";
 
 function Course() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams(); 
+  const navigate = useNavigate();
+
   const [course, setCourse] = useState<CourseModel | null>(null);
   const [recomendCourse, setRecomendCourse] = useState<CourseCardProps[]>([]);
-  const thumbnails = [thumnailCourse1, thumnailCourse2, thumnailCourse3];
-  const navigate = useNavigate();
+
+  // State lưu ID lớp học được chọn
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         const res = await getCourseDetail(id);
         setCourse(res.data.data);
+        // Reset chọn lớp khi load khóa học mới
+        setSelectedClassId(null);
       } catch (error) {
         console.error("Lỗi khi tải khóa học:", error);
       }
@@ -73,6 +92,26 @@ function Course() {
     fetchCourse();
     fetchRecomendCourse();
   }, [id]);
+
+  const categoryIdFromUrl = searchParams.get("categoryId");
+
+  // --- HÀM XỬ LÝ ĐĂNG KÝ MỚI ---
+  const handleRegister = () => {
+    if (!course || !selectedClassId) return;
+
+    const params = new URLSearchParams();
+
+    const finalCategoryId = categoryIdFromUrl
+
+    if (finalCategoryId) {
+        params.append("categoryId", String(finalCategoryId));
+    }
+
+    params.append("courses", String(course.courseId));
+    params.append("classId", String(selectedClassId));
+
+    navigate(`/register?${params.toString()}`);
+  };
 
   const linkYoutube = "https://www.youtube.com/embed/";
 
@@ -131,17 +170,18 @@ function Course() {
         {...rowContainterProps}
         sx={{
           flexDirection: { xs: "column", md: "row" },
-          alignItems: { xs: "center", md: "stretch"},
+          alignItems: { xs: "center", md: "stretch" }, // Dùng stretch để sticky hoạt động tốt
           gap: 2,
           margin: "0 auto",
           padding: "10px",
+          maxWidth: "1200px", // Giới hạn chiều rộng để đẹp hơn trên màn to
         }}
       >
         {/* First column */}
         <Box
           {...columnContainterProps}
           sx={{
-            width: { xs: "95%", md: "55%" },
+            width: { xs: "95%", md: "65%" },
             margin: "10px",
             padding: "10px",
             order: { xs: 2, md: 1 },
@@ -192,7 +232,7 @@ function Course() {
               boxShadow: "0px 0px 0px 0px rgba(0,0,0,0.5)",
               borderRadius: "15px",
               mt: 2,
-              width: "90%",
+              width: "100%",
             }}
           >
             <Box {...rowContainterProps} padding="10px">
@@ -240,12 +280,13 @@ function Course() {
           </Box>
         </Box>
 
-        {/* Second column */}
+        {/* Second column (Sidebar) */}
         <Box
           sx={{
-            width: { xs: "97%", md: "23%" },
+            width: { xs: "97%", md: "32%" },
             margin: "10px",
             order: { xs: -1, md: 2 },
+            position: "relative",
           }}
         >
           <Box
@@ -253,11 +294,13 @@ function Course() {
             sx={{
               width: "100%",
               position: { xs: "static", md: "sticky" },
-              top: 100,
+              top: "100px",
               borderRadius: "20px",
               boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
               border: "1px solid #e0e0e0",
               padding: "20px",
+              backgroundColor: "white",
+              zIndex: 10,
             }}
           >
             {/* Video Thumbnail */}
@@ -273,7 +316,7 @@ function Course() {
                 component="iframe"
                 width="100%"
                 height="100%"
-                src={linkYoutube + "IADhKnmQMtk?autoplay=1&mute=1"} //Thay lại khi có API
+                src={course.video.replace("watch?v=", "embed/")}
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -282,7 +325,7 @@ function Course() {
             </Box>
 
             {/* Course name */}
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 1 }}>
               <Typography
                 variant="h5"
                 sx={{ fontWeight: "bold", color: "#003E83" }}
@@ -292,16 +335,186 @@ function Course() {
             </Box>
 
             {/* Tuition fee */}
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                Học phí:{" "}
-                {new Intl.NumberFormat("vi-VN").format(course.tuitionFee)}đ
+            <Box sx={{ mt: 1 }}>
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: "bold", color: "#FF4500" }}
+              >
+                {new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(course.tuitionFee)}
               </Typography>
             </Box>
 
+            <Divider sx={{ my: 2 }}>
+              <Chip
+                label="LỊCH KHAI GIẢNG"
+                color="primary"
+                size="small"
+                sx={{ fontWeight: "bold" }}
+              />
+            </Divider>
+
+            {/* --- DANH SÁCH LỚP HỌC --- */}
+            <Box sx={{ maxHeight: "350px", overflowY: "auto", pr: 0.5 }}>
+              {course.classInfos && course.classInfos.length > 0 ? (
+                <RadioGroup
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
+                >
+                  <Stack spacing={1.5}>
+                    {course.classInfos.map((cls) => (
+                      <Paper
+                        key={cls.classId}
+                        variant="outlined"
+                        sx={{
+                          p: 1.5,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          borderColor:
+                            selectedClassId === cls.classId
+                              ? "#FF4500"
+                              : "#e0e0e0",
+                          backgroundColor:
+                            selectedClassId === cls.classId
+                              ? "#fff5f2"
+                              : "white",
+                          "&:hover": {
+                            borderColor: "#FF4500",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                          },
+                          position: "relative",
+                        }}
+                        onClick={() => setSelectedClassId(cls.classId)}
+                      >
+                        <Box display="flex" alignItems="flex-start">
+                          <Radio
+                            value={cls.classId}
+                            size="small"
+                            sx={{
+                              mt: -0.5,
+                              ml: -1,
+                              color: "#FF4500",
+                              "&.Mui-checked": { color: "#FF4500" },
+                            }}
+                          />
+                          <Box flex={1}>
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="bold"
+                              color="#003E83"
+                              sx={{ lineHeight: 1.3, mb: 0.5 }}
+                            >
+                              {cls.className}
+                            </Typography>
+
+                            <Stack spacing={0.5}>
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faCalendarAlt}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  KG:{" "}
+                                  {new Date(cls.startDate).toLocaleDateString(
+                                    "vi-VN"
+                                  )}
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faClock}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {cls.schedulePattern} (
+                                  {cls.startTime.slice(0, 5)} -{" "}
+                                  {cls.endTime.slice(0, 5)})
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faChalkboardTeacher}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  GV: {cls.instructorName}
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faDoorOpen}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {cls.roomName}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </RadioGroup>
+              ) : (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 2,
+                    bgcolor: "#f5f5f5",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Hiện chưa có lịch khai giảng.
+                  </Typography>
+                  <Button size="small" sx={{ mt: 1, textTransform: "none" }}>
+                    Đăng ký nhận tư vấn
+                  </Button>
+                </Box>
+              )}
+            </Box>
+
             {/* Button đăng ký khóa học */}
-            <Box sx={{ mt: 5 }}>
+            <Box sx={{ mt: 3 }}>
               <Button
+                fullWidth
+                variant="contained"
+                // UX: Disable nếu chưa chọn lớp
+                disabled={!selectedClassId}
                 sx={{
                   backgroundColor: "#FF4500",
                   color: "white",
@@ -309,23 +522,34 @@ function Course() {
                   borderRadius: 3,
                   textTransform: "none",
                   fontWeight: "bold",
+                  fontSize: "16px",
                   transition: "all 0.3s ease",
                   padding: "12px 24px",
+                  boxShadow: "0 4px 10px rgba(255, 69, 0, 0.3)",
                   ":hover": {
-                    backgroundColor: "#0074FC",
+                    backgroundColor: "#d13a00",
+                    boxShadow: "0 6px 15px rgba(255, 69, 0, 0.4)",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "#ccc",
+                    color: "#666",
                   },
                 }}
-                onClick={() =>
-                  navigate("/register-course", {
-                    state: {
-                      courseId: course.courseId,
-                      courseName: course.courseName,
-                    },
-                  })
-                }
+                onClick={handleRegister}
               >
-                Đăng ký ngay
+                {selectedClassId ? "ĐĂNG KÝ NGAY" : "VUI LÒNG CHỌN LỚP"}
               </Button>
+
+              <Typography
+                variant="caption"
+                display="block"
+                align="center"
+                color="text.secondary"
+                mt={2}
+                sx={{ fontStyle: "italic" }}
+              >
+                * Cam kết đầu ra bằng văn bản.
+              </Typography>
             </Box>
           </Box>
         </Box>

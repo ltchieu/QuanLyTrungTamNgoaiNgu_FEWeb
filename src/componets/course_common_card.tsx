@@ -25,9 +25,10 @@ import { useNavigate } from "react-router-dom";
 
 interface CourseCardProps {
   course: ActiveCourseResponse;
+  categoryId: number;
 }
 
-const CourseCommonCard: React.FC<CourseCardProps> = ({ course }) => {
+const CourseCommonCard: React.FC<CourseCardProps> = ({ course, categoryId }) => {
   const navigate = useNavigate();
   return (
     <Grid container spacing={2} sx={{ mb: 10, alignItems: "flex-start" }}>
@@ -56,7 +57,7 @@ const CourseCommonCard: React.FC<CourseCardProps> = ({ course }) => {
           />
           <Button
             onClick={() => {
-              navigate(`/course/${course.courseId}`);
+              navigate(`/course/${course.courseId}?categoryId=${categoryId}`);
             }}
             sx={{
               position: "absolute",
