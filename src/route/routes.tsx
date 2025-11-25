@@ -7,6 +7,8 @@ import CategoryPage from "../pages/category_page";
 import RegisterPage from "../pages/register_course";
 import WeeklySchedule from "../pages/schedule";
 import ManageAccountPage from "../pages/profile_page";
+import RegisteredCoursePage from "../pages/registered_course_page";
+import StudentDocumentPage from "../pages/student_document_page";
 import PersistLogin from "../componets/persist_login";
 import RequireAuth from "../model/require_auth";
 
@@ -30,7 +32,11 @@ function AppRoutes() {
               ></Route>
               <Route
                 path="/student/registered-courses"
-                element={<WeeklySchedule />}
+                element={<RegisteredCoursePage />}
+              ></Route>
+              <Route
+                path="/student/documents"
+                element={<StudentDocumentPage />}
               ></Route>
               <Route
                 path="/account/profile"

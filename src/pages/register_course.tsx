@@ -9,7 +9,6 @@ import {
   Grid,
   Paper,
   Typography,
-  TextField,
   Button,
   Box,
   RadioGroup,
@@ -23,8 +22,20 @@ import {
   FormControl,
   FormLabel,
 } from "@mui/material";
-import { CourseGroupResponse } from "../model/course_model";
+import { CourseGroupResponse, CourseModel } from "../model/course_model";
 import { getCategoryDetail } from "../services/category_service";
+import { getStudentInfo } from "../services/user_service";
+import { getCourseDetail } from "../services/course_services";
+import { axiosClient } from "../api/axios_client";
+import { StudentInfoResponse } from "../model/student";
+import useAxiosPrivate from "../hook/useAxiosPrivate";
+import {
+  faCalendarAlt,
+  faClock,
+  faChalkboardTeacher,
+  faDoorOpen,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface PaymentMethod {
   maPhuongThuc: string;
@@ -38,12 +49,10 @@ const getPaymentMethods = (): Promise<{ data: PaymentMethod[] }> => {
   return new Promise((resolve) => {
     resolve({
       data: [
-        { maPhuongThuc: "MOMO", tenPhuongThuc: "Ví MoMo", loaiPT: "Online" },
-        { maPhuongThuc: "ZALO", tenPhuongThuc: "Ví ZaloPay", loaiPT: "Online" },
         {
-          maPhuongThuc: "BANK",
-          tenPhuongThuc: "Chuyển khoản",
-          loaiPT: "Offline",
+          maPhuongThuc: "VNPAY",
+          tenPhuongThuc: "Thanh toán online qua VNPAY",
+          loaiPT: "Online",
         },
         { maPhuongThuc: "CASH", tenPhuongThuc: "Tiền mặt", loaiPT: "Offline" },
       ],
@@ -52,12 +61,9 @@ const getPaymentMethods = (): Promise<{ data: PaymentMethod[] }> => {
 };
 
 // 5. API mới để lấy khuyến mãi
-// API này sẽ nhận 1 mảng ID và trả về số tiền giảm
 const getDiscount = (
   courseIds: string[]
 ): Promise<{ data: { discountAmount: number; description: string } }> => {
-  // Giả lập logic (Backend sẽ xử lý)
-  // Ví dụ: Nếu chọn 2 khóa Speaking + Writing (ID 1, 2) thì giảm
   return new Promise((resolve) => {
     let discountAmount = 0;
     let description = "Không có khuyến mãi";
@@ -84,6 +90,7 @@ const submitRegistration = (formData: any): Promise<any> => {
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const axiosPrivate = useAxiosPrivate();
 
   // --- States ---
   const [categoryDetail, setCategoryDetail] =
@@ -94,14 +101,13 @@ const RegisterPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const categoryId = searchParams.get("categoryId");
   const initialCourseIdsParam = searchParams.get("courses") || "";
+  const initialClassIdParam = searchParams.get("classId");
 
-  const [form, setForm] = useState({
-    hoTen: "",
-    email: "",
-    soDienThoai: "",
-    matKhau: "",
-    xacNhanMatKhau: "",
-  });
+  const [studentInfo, setStudentInfo] = useState<StudentInfoResponse | null>(null);
+
+  // Class selection
+  const [courseDetails, setCourseDetails] = useState<CourseModel[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<{ [key: string]: number }>({}); // courseId -> classId
 
   // Thanh toán
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
@@ -134,6 +140,15 @@ const RegisterPage: React.FC = () => {
         if (paymentRes.data.length > 0) {
           setSelectedPayment(paymentRes.data[0].maPhuongThuc);
         }
+        
+        // Load student info
+        try {
+            const studentData = await getStudentInfo(axiosPrivate);
+            setStudentInfo(studentData);
+        } catch (error) {
+            console.error("Failed to load student info", error);
+        }
+
       } catch (err) {
         setError("Lỗi khi tải dữ liệu trang đăng ký.");
         console.error(err);
@@ -163,6 +178,57 @@ const RegisterPage: React.FC = () => {
     }
   }, [categoryDetail, initialCourseIdsParam]);
 
+  // Fetch details for selected courses to get class lists
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      if (selectedCourses.length === 0) {
+        setCourseDetails([]);
+        return;
+      }
+
+      // Filter out courses that are already fetched
+      const newCourseIds = selectedCourses.filter(
+        (id) => !courseDetails.some((c) => String(c.courseId) === id)
+      );
+
+      // Remove details for courses that are no longer selected
+      setCourseDetails((prev) =>
+        prev.filter((c) => selectedCourses.includes(String(c.courseId)))
+      );
+
+      if (newCourseIds.length === 0) return;
+
+      try {
+        const responses = await Promise.all(
+          newCourseIds.map((id) => getCourseDetail(id))
+        );
+        const newDetails = responses.map((res) => res.data.data);
+        setCourseDetails((prev) => [...prev, ...newDetails]);
+      } catch (err) {
+        console.error("Error fetching course details:", err);
+      }
+    };
+
+    fetchCourseDetails();
+  }, [selectedCourses]);
+
+  // Handle initial class selection from URL
+  useEffect(() => {
+    if (initialClassIdParam && courseDetails.length > 0) {
+      const classId = Number(initialClassIdParam);
+      // Find which course this class belongs to
+      for (const course of courseDetails) {
+        if (course.classInfos?.some((cls) => cls.classId === classId)) {
+          setSelectedClasses((prev) => ({
+            ...prev,
+            [course.courseId]: classId,
+          }));
+          break;
+        }
+      }
+    }
+  }, [initialClassIdParam, courseDetails]);
+
   // 2. Tính lại giá tiền và khuyến mãi khi thay đổi lựa chọn
   useEffect(() => {
     if (!categoryDetail) return;
@@ -191,9 +257,7 @@ const RegisterPage: React.FC = () => {
   }, [selectedCourses, categoryDetail]);
 
   // --- Handlers ---
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  // Removed handleFormChange as form is no longer used
 
   const handleCourseToggle = (courseId: string) => {
     setSelectedCourses((prev) =>
@@ -218,10 +282,11 @@ const RegisterPage: React.FC = () => {
     setSubmitting(true);
 
     // Validate
-    if (form.matKhau !== form.xacNhanMatKhau) {
-      alert("Mật khẩu không khớp!");
-      setSubmitting(false);
-      return;
+    // Validate
+    if (!studentInfo) {
+        alert("Không tìm thấy thông tin học viên.");
+        setSubmitting(false);
+        return;
     }
     if (selectedCourses.length === 0) {
       alert("Vui lòng chọn ít nhất một khóa học.");
@@ -229,15 +294,25 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    // Validate class selection
+    const missingClassCourses = selectedCourses.filter(
+      (courseId) => !selectedClasses[courseId]
+    );
+    if (missingClassCourses.length > 0) {
+      alert("Vui lòng chọn lớp học cho tất cả các khóa học đã chọn.");
+      setSubmitting(false);
+      return;
+    }
+
     // Tạo DTO gửi đi
     const registrationData = {
-      hoTen: form.hoTen,
-      email: form.email,
-      soDienThoai: form.soDienThoai,
-      matKhau: form.matKhau,
+      hoTen: studentInfo.name,
+      email: studentInfo.email,
+      soDienThoai: studentInfo.phoneNumber,
       maPhuongThuc: selectedPayment,
       tongTien: finalPrice,
       courseIds: selectedCourses,
+      classIds: Object.values(selectedClasses),
     };
 
     try {
@@ -300,74 +375,211 @@ const RegisterPage: React.FC = () => {
         <Grid container spacing={4}>
           {/* CỘT TRÁI: FORM THÔNG TIN */}
           <Grid size={{ xs: 12, md: 7 }}>
-            {/* 1. Thông tin cá nhânn */}
+            {/* 1. Thông tin cá nhân */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h5" fontWeight="600" gutterBottom>
                 1. Thông tin cá nhân
               </Typography>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    name="hoTen"
-                    label="Họ và tên"
-                    value={form.hoTen}
-                    onChange={handleFormChange}
-                    required
-                    fullWidth
-                  />
+              {studentInfo ? (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Họ và tên
+                    </Typography>
+                    <Typography variant="body1" fontWeight="500">
+                      {studentInfo.name}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Email
+                    </Typography>
+                    <Typography variant="body1" fontWeight="500">
+                      {studentInfo.email}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Số điện thoại
+                    </Typography>
+                    <Typography variant="body1" fontWeight="500">
+                      {studentInfo.phoneNumber}
+                    </Typography>
+                  </Grid>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    name="email"
-                    label="Email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleFormChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    name="soDienThoai"
-                    label="Số điện thoại"
-                    value={form.soDienThoai}
-                    onChange={handleFormChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    name="matKhau"
-                    label="Mật khẩu"
-                    type="password"
-                    value={form.matKhau}
-                    onChange={handleFormChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    name="xacNhanMatKhau"
-                    label="Xác nhận mật khẩu"
-                    type="password"
-                    value={form.xacNhanMatKhau}
-                    onChange={handleFormChange}
-                    required
-                    fullWidth
-                  />
-                </Grid>
-              </Grid>
+              ) : (
+                <Typography>Đang tải thông tin...</Typography>
+              )}
             </Paper>
 
-            {/* 2. Phương thức thanh toán */}
+            {/* 2. Chọn lớp học */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h5" fontWeight="600" gutterBottom>
+                2. Chọn lớp học
+              </Typography>
+              {selectedCourses.length === 0 ? (
+                <Typography color="text.secondary">
+                  Vui lòng chọn khóa học ở cột bên phải trước.
+                </Typography>
+              ) : (
+                <Box display="flex" flexDirection="column" gap={3}>
+                  {courseDetails.map((course) => (
+                    <Box key={course.courseId}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        color="primary"
+                        gutterBottom
+                      >
+                        {course.courseName}
+                      </Typography>
+                      {course.classInfos && course.classInfos.length > 0 ? (
+                        <RadioGroup
+                          value={selectedClasses[course.courseId] || ""}
+                          onChange={(e) =>
+                            setSelectedClasses((prev) => ({
+                              ...prev,
+                              [course.courseId]: Number(e.target.value),
+                            }))
+                          }
+                        >
+                          <Grid container spacing={2}>
+                            {course.classInfos.map((cls) => (
+                              <Grid size={{ xs: 12 }} key={cls.classId}>
+                                <Paper
+                                  variant="outlined"
+                                  sx={{
+                                    p: 2,
+                                    cursor: "pointer",
+                                    borderColor:
+                                      selectedClasses[course.courseId] ===
+                                      cls.classId
+                                        ? "#FF4500"
+                                        : "#e0e0e0",
+                                    bgcolor:
+                                      selectedClasses[course.courseId] ===
+                                      cls.classId
+                                        ? "#fff5f2"
+                                        : "white",
+                                  }}
+                                  onClick={() =>
+                                    setSelectedClasses((prev) => ({
+                                      ...prev,
+                                      [course.courseId]: cls.classId,
+                                    }))
+                                  }
+                                >
+                                  <Box display="flex" alignItems="flex-start">
+                                    <Radio
+                                      value={cls.classId}
+                                      size="small"
+                                      sx={{
+                                        mt: -0.5,
+                                        ml: -1,
+                                        color: "#FF4500",
+                                        "&.Mui-checked": { color: "#FF4500" },
+                                      }}
+                                    />
+                                    <Box flex={1}>
+                                      <Typography
+                                        variant="subtitle2"
+                                        fontWeight="bold"
+                                      >
+                                        {cls.className}
+                                      </Typography>
+                                      <Box
+                                        display="flex"
+                                        flexWrap="wrap"
+                                        gap={2}
+                                        mt={1}
+                                      >
+                                        <Box
+                                          display="flex"
+                                          alignItems="center"
+                                          gap={0.5}
+                                        >
+                                          <FontAwesomeIcon
+                                            icon={faCalendarAlt}
+                                            style={{
+                                              width: 14,
+                                              color: "#666",
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            KG:{" "}
+                                            {new Date(
+                                              cls.startDate
+                                            ).toLocaleDateString("vi-VN")}
+                                          </Typography>
+                                        </Box>
+                                        <Box
+                                          display="flex"
+                                          alignItems="center"
+                                          gap={0.5}
+                                        >
+                                          <FontAwesomeIcon
+                                            icon={faClock}
+                                            style={{
+                                              width: 14,
+                                              color: "#666",
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {cls.schedulePattern} (
+                                            {cls.startTime.slice(0, 5)} -{" "}
+                                            {cls.endTime.slice(0, 5)})
+                                          </Typography>
+                                        </Box>
+                                        <Box
+                                          display="flex"
+                                          alignItems="center"
+                                          gap={0.5}
+                                        >
+                                          <FontAwesomeIcon
+                                            icon={faChalkboardTeacher}
+                                            style={{
+                                              width: 14,
+                                              color: "#666",
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            GV: {cls.instructorName}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+                                    </Box>
+                                  </Box>
+                                </Paper>
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </RadioGroup>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          Chưa có lịch khai giảng.
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Paper>
+
+            {/* 3. Phương thức thanh toán */}
             <Paper elevation={2} sx={{ p: 3 }}>
               <FormControl component="fieldset" fullWidth>
                 <FormLabel component="legend">
                   <Typography variant="h5" fontWeight="600" gutterBottom>
-                    2. Phương thức thanh toán
+                    3. Phương thức thanh toán
                   </Typography>
                 </FormLabel>
                 <RadioGroup

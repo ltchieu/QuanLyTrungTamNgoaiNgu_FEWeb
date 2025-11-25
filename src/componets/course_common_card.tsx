@@ -15,6 +15,7 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { ActiveCourseResponse } from "../model/course_model";
 import {
+  faClock,
   faGraduationCap,
   faMoneyBill,
   faRightToBracket,
@@ -205,12 +206,12 @@ const CourseCommonCard: React.FC<CourseCardProps> = ({ course, categoryId }) => 
                   </ListItem>
                   <ListItem>
                     <ListItemIcon sx={{ minWidth: 40 }}>
-                      <FontAwesomeIcon icon={faUsers} color="#FD3F00" />
+                      <FontAwesomeIcon icon={faClock} color="#FD3F00" />
                     </ListItemIcon>
                     <ListItemText
                       primaryTypographyProps={{ fontWeight: "bold" }}
                     >
-                      Sĩ số: 10 - 12 học viên/lớp
+                      Số giờ học: {course.studyHours}
                     </ListItemText>
                   </ListItem>
                 </List>

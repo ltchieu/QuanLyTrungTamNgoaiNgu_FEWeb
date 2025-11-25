@@ -1,5 +1,4 @@
 import { axiosClient } from "../api/axios_client";
-import { ApiResponse } from "../model/api_respone";
 import { CourseGroupResponse } from "../model/course_model";
 
 export async function getCategoryDetail(id?: string): Promise<CourseGroupResponse> {
@@ -8,7 +7,7 @@ export async function getCategoryDetail(id?: string): Promise<CourseGroupRespons
       `categories/${id}`
     );
 
-    if (res.data) {
+    if (res.data) {;
       return res.data;
     } else {
       throw new Error(

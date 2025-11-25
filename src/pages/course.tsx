@@ -1,7 +1,4 @@
 import "../css/course.css";
-import thumnailCourse1 from "../images/thumbnail-khoa-hoc-pre-ielts-768x403.jpg";
-import thumnailCourse2 from "../images/thumbnail-khoa-hoc-ielts-cap-toc-768x403.jpg";
-import thumnailCourse3 from "../images/thumbnail-khoa-hoc-ielts-5.0-va-5.5-768x403.jpg";
 import {
   faCircleCheck,
   faMedal,
@@ -170,11 +167,11 @@ function Course() {
         {...rowContainterProps}
         sx={{
           flexDirection: { xs: "column", md: "row" },
-          alignItems: { xs: "center", md: "stretch" }, // Dùng stretch để sticky hoạt động tốt
+          alignItems: { xs: "center", md: "stretch" },
           gap: 2,
           margin: "0 auto",
           padding: "10px",
-          maxWidth: "1200px", // Giới hạn chiều rộng để đẹp hơn trên màn to
+          maxWidth: "1200px",
         }}
       >
         {/* First column */}
@@ -501,9 +498,6 @@ function Course() {
                   <Typography variant="body2" color="text.secondary">
                     Hiện chưa có lịch khai giảng.
                   </Typography>
-                  <Button size="small" sx={{ mt: 1, textTransform: "none" }}>
-                    Đăng ký nhận tư vấn
-                  </Button>
                 </Box>
               )}
             </Box>
@@ -513,7 +507,7 @@ function Course() {
               <Button
                 fullWidth
                 variant="contained"
-                // UX: Disable nếu chưa chọn lớp
+                // Disable nếu chưa chọn lớp
                 disabled={!selectedClassId}
                 sx={{
                   backgroundColor: "#FF4500",

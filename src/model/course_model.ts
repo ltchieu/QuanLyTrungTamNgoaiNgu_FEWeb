@@ -63,6 +63,7 @@ export interface ActiveCourseResponse {
   entryLevel: string;
   targetLevel: string;
   description: string;
+  studyHours: string;
   image: string;
 }
 
