@@ -21,7 +21,11 @@ import {
   Divider,
   FormControl,
   FormLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { CourseGroupResponse, CourseModel } from "../model/course_model";
 import { getCategoryDetail } from "../services/category_service";
 import { getStudentInfo } from "../services/user_service";
@@ -110,6 +114,7 @@ const RegisterPage: React.FC = () => {
   // Thanh toán
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>("");
+  const [expandedCourseId, setExpandedCourseId] = useState<string | false>(false);
 
   // Tính toán giá
   const [originalPrice, setOriginalPrice] = useState(0);
@@ -202,6 +207,12 @@ const RegisterPage: React.FC = () => {
         );
         const newDetails = responses.map((res) => res.data.data);
         setCourseDetails((prev) => [...prev, ...newDetails]);
+
+        // Auto expand the first new course if nothing is expanded
+        if (!expandedCourseId && newDetails.length > 0) {
+          setExpandedCourseId(String(newDetails[0].courseId));
+        }
+
       } catch (err) {
         console.error("Error fetching course details:", err);
       }
@@ -221,6 +232,7 @@ const RegisterPage: React.FC = () => {
             ...prev,
             [course.courseId]: classId,
           }));
+          setExpandedCourseId(String(course.courseId));
           break;
         }
       }
@@ -420,153 +432,186 @@ const RegisterPage: React.FC = () => {
                   Vui lòng chọn khóa học ở cột bên phải trước.
                 </Typography>
               ) : (
-                <Box display="flex" flexDirection="column" gap={3}>
+                <Box display="flex" flexDirection="column" gap={2}>
                   {courseDetails.map((course) => (
-                    <Box key={course.courseId}>
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="bold"
-                        color="primary"
-                        gutterBottom
+                    <Accordion
+                      key={course.courseId}
+                      expanded={expandedCourseId === String(course.courseId)}
+                      onChange={(_event, isExpanded) =>
+                        setExpandedCourseId(isExpanded ? String(course.courseId) : false)
+                      }
+                      variant="outlined"
+                      sx={{
+                        borderColor: selectedClasses[course.courseId] ? "#4caf50" : undefined,
+                        "&.Mui-expanded": {
+                          borderColor: "#FF4500",
+                        }
+                      }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls={`panel-${course.courseId}-content`}
+                        id={`panel-${course.courseId}-header`}
+                        sx={{
+                          backgroundColor: "#f9f9f9",
+                          "&.Mui-expanded": {
+                            backgroundColor: "#fff5f2",
+                          },
+                        }}
                       >
-                        {course.courseName}
-                      </Typography>
-                      {course.classInfos && course.classInfos.length > 0 ? (
-                        <RadioGroup
-                          value={selectedClasses[course.courseId] || ""}
-                          onChange={(e) =>
-                            setSelectedClasses((prev) => ({
-                              ...prev,
-                              [course.courseId]: Number(e.target.value),
-                            }))
-                          }
-                        >
-                          <Grid container spacing={2}>
-                            {course.classInfos.map((cls) => (
-                              <Grid size={{ xs: 12 }} key={cls.classId}>
-                                <Paper
-                                  variant="outlined"
-                                  sx={{
-                                    p: 2,
-                                    cursor: "pointer",
-                                    borderColor:
-                                      selectedClasses[course.courseId] ===
-                                        cls.classId
-                                        ? "#FF4500"
-                                        : "#e0e0e0",
-                                    bgcolor:
-                                      selectedClasses[course.courseId] ===
-                                        cls.classId
-                                        ? "#fff5f2"
-                                        : "white",
-                                  }}
-                                  onClick={() =>
-                                    setSelectedClasses((prev) => ({
-                                      ...prev,
-                                      [course.courseId]: cls.classId,
-                                    }))
-                                  }
-                                >
-                                  <Box display="flex" alignItems="flex-start">
-                                    <Radio
-                                      value={cls.classId}
-                                      size="small"
-                                      sx={{
-                                        mt: -0.5,
-                                        ml: -1,
-                                        color: "#FF4500",
-                                        "&.Mui-checked": { color: "#FF4500" },
-                                      }}
-                                    />
-                                    <Box flex={1}>
-                                      <Typography
-                                        variant="subtitle2"
-                                        fontWeight="bold"
-                                      >
-                                        {cls.className}
-                                      </Typography>
-                                      <Box
-                                        display="flex"
-                                        flexWrap="wrap"
-                                        gap={2}
-                                        mt={1}
-                                      >
+                        <Box display="flex" alignItems="center" width="100%" justifyContent="space-between" pr={2}>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight="bold"
+                            color={selectedClasses[course.courseId] ? "success.main" : "text.primary"}
+                          >
+                            {course.courseName}
+                          </Typography>
+                          {selectedClasses[course.courseId] && (
+                            <Typography variant="caption" color="success.main" fontWeight="bold">
+                              Đã chọn lớp
+                            </Typography>
+                          )}
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {course.classInfos && course.classInfos.length > 0 ? (
+                          <RadioGroup
+                            value={selectedClasses[course.courseId] || ""}
+                            onChange={(e) =>
+                              setSelectedClasses((prev) => ({
+                                ...prev,
+                                [course.courseId]: Number(e.target.value),
+                              }))
+                            }
+                          >
+                            <Grid container spacing={2}>
+                              {course.classInfos.map((cls) => (
+                                <Grid size={{ xs: 12 }} key={cls.classId}>
+                                  <Paper
+                                    variant="outlined"
+                                    sx={{
+                                      p: 2,
+                                      cursor: "pointer",
+                                      borderColor:
+                                        selectedClasses[course.courseId] ===
+                                          cls.classId
+                                          ? "#FF4500"
+                                          : "#e0e0e0",
+                                      bgcolor:
+                                        selectedClasses[course.courseId] ===
+                                          cls.classId
+                                          ? "#fff5f2"
+                                          : "white",
+                                    }}
+                                    onClick={() =>
+                                      setSelectedClasses((prev) => ({
+                                        ...prev,
+                                        [course.courseId]: cls.classId,
+                                      }))
+                                    }
+                                  >
+                                    <Box display="flex" alignItems="flex-start">
+                                      <Radio
+                                        value={cls.classId}
+                                        size="small"
+                                        sx={{
+                                          mt: -0.5,
+                                          ml: -1,
+                                          color: "#FF4500",
+                                          "&.Mui-checked": { color: "#FF4500" },
+                                        }}
+                                      />
+                                      <Box flex={1}>
+                                        <Typography
+                                          variant="subtitle2"
+                                          fontWeight="bold"
+                                        >
+                                          {cls.className}
+                                        </Typography>
                                         <Box
                                           display="flex"
-                                          alignItems="center"
-                                          gap={0.5}
+                                          flexWrap="wrap"
+                                          gap={2}
+                                          mt={1}
                                         >
-                                          <FontAwesomeIcon
-                                            icon={faCalendarAlt}
-                                            style={{
-                                              width: 14,
-                                              color: "#666",
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
+                                          <Box
+                                            display="flex"
+                                            alignItems="center"
+                                            gap={0.5}
                                           >
-                                            KG:{" "}
-                                            {new Date(
-                                              cls.startDate
-                                            ).toLocaleDateString("vi-VN")}
-                                          </Typography>
-                                        </Box>
-                                        <Box
-                                          display="flex"
-                                          alignItems="center"
-                                          gap={0.5}
-                                        >
-                                          <FontAwesomeIcon
-                                            icon={faClock}
-                                            style={{
-                                              width: 14,
-                                              color: "#666",
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
+                                            <FontAwesomeIcon
+                                              icon={faCalendarAlt}
+                                              style={{
+                                                width: 14,
+                                                color: "#666",
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="caption"
+                                              color="text.secondary"
+                                            >
+                                              KG:{" "}
+                                              {new Date(
+                                                cls.startDate
+                                              ).toLocaleDateString("vi-VN")}
+                                            </Typography>
+                                          </Box>
+                                          <Box
+                                            display="flex"
+                                            alignItems="center"
+                                            gap={0.5}
                                           >
-                                            {cls.schedulePattern} (
-                                            {cls.startTime.slice(0, 5)} -{" "}
-                                            {cls.endTime ? cls.endTime.slice(0, 5) : "..."})
-                                          </Typography>
-                                        </Box>
-                                        <Box
-                                          display="flex"
-                                          alignItems="center"
-                                          gap={0.5}
-                                        >
-                                          <FontAwesomeIcon
-                                            icon={faChalkboardTeacher}
-                                            style={{
-                                              width: 14,
-                                              color: "#666",
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="caption"
-                                            color="text.secondary"
+                                            <FontAwesomeIcon
+                                              icon={faClock}
+                                              style={{
+                                                width: 14,
+                                                color: "#666",
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="caption"
+                                              color="text.secondary"
+                                            >
+                                              {cls.schedulePattern} (
+                                              {cls.startTime.slice(0, 5)} -{" "}
+                                              {cls.endTime ? cls.endTime.slice(0, 5) : "..."})
+                                            </Typography>
+                                          </Box>
+                                          <Box
+                                            display="flex"
+                                            alignItems="center"
+                                            gap={0.5}
                                           >
-                                            GV: {cls.instructorName}
-                                          </Typography>
+                                            <FontAwesomeIcon
+                                              icon={faChalkboardTeacher}
+                                              style={{
+                                                width: 14,
+                                                color: "#666",
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="caption"
+                                              color="text.secondary"
+                                            >
+                                              GV: {cls.instructorName}
+                                            </Typography>
+                                          </Box>
                                         </Box>
                                       </Box>
                                     </Box>
-                                  </Box>
-                                </Paper>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </RadioGroup>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          Chưa có lịch khai giảng.
-                        </Typography>
-                      )}
-                    </Box>
+                                  </Paper>
+                                </Grid>
+                              ))}
+                            </Grid>
+                          </RadioGroup>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            Chưa có lịch khai giảng.
+                          </Typography>
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
                   ))}
                 </Box>
               )}

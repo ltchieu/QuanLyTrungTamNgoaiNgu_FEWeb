@@ -43,6 +43,7 @@ export interface CourseModel {
   description: string;
   category: string;
   level: string;
+  promotionPrice: number;
   objectives: Objective[];
   modules: Module[];
   classInfos: ClassInfo[];
@@ -63,7 +64,7 @@ export interface ClassScheduleResponse {
   className: string;
   startDate: string;
   endDate: string;
-  schedule: string; // e.g. "2-4-6"
+  schedule: string;
   startTime: string;
   endTime: string;
   roomName: string;

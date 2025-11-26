@@ -180,7 +180,6 @@ function Course() {
             width: { xs: "95%", md: "65%" },
             margin: "10px",
             padding: "10px",
-            order: { xs: 2, md: 1 },
           }}
         >
           <Typography
@@ -274,6 +273,160 @@ function Course() {
           <Box>
             {course && <CourseModuleDetails modules={course.modules} />}
           </Box>
+
+          {/* --- DANH SÁCH LỚP HỌC--- */}
+          <Box sx={{ mt: 5 }}>
+            <Typography variant="h5" sx={{ fontSize: 25, fontWeight: "bold", mb: 2 }}>
+              Lịch khai giảng
+            </Typography>
+            <Box sx={{ pr: 0.5 }}>
+              {course.classInfos && course.classInfos.length > 0 ? (
+                <RadioGroup
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
+                >
+                  <Stack spacing={2}>
+                    {course.classInfos.map((cls) => (
+                      <Paper
+                        key={cls.classId}
+                        variant="outlined"
+                        sx={{
+                          p: 2,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          borderColor:
+                            selectedClassId === cls.classId
+                              ? "#FF4500"
+                              : "#e0e0e0",
+                          backgroundColor:
+                            selectedClassId === cls.classId
+                              ? "#fff5f2"
+                              : "white",
+                          "&:hover": {
+                            borderColor: "#FF4500",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                          },
+                          position: "relative",
+                        }}
+                        onClick={() => setSelectedClassId(cls.classId)}
+                      >
+                        <Box display="flex" alignItems="flex-start">
+                          <Radio
+                            value={cls.classId}
+                            size="small"
+                            sx={{
+                              mt: -0.5,
+                              ml: -1,
+                              color: "#FF4500",
+                              "&.Mui-checked": { color: "#FF4500" },
+                            }}
+                          />
+                          <Box flex={1}>
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              color="#003E83"
+                              sx={{ lineHeight: 1.3, mb: 1 }}
+                            >
+                              {cls.className}
+                            </Typography>
+
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={3} flexWrap="wrap">
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faCalendarAlt}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  KG:{" "}
+                                  {new Date(cls.startDate).toLocaleDateString(
+                                    "vi-VN"
+                                  )}
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faClock}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {cls.schedulePattern} (
+                                  {cls.startTime.slice(0, 5)} -{" "}
+                                  {cls.endTime?.slice(0, 5)})
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faChalkboardTeacher}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  GV: {cls.instructorName}
+                                </Typography>
+                              </Stack>
+
+                              <Stack
+                                direction="row"
+                                alignItems="center"
+                                gap={1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faDoorOpen}
+                                  style={{ width: 14, color: "#666" }}
+                                />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {cls.roomName}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </RadioGroup>
+              ) : (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 2,
+                    bgcolor: "#f5f5f5",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Hiện chưa có lịch khai giảng.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
         </Box>
 
         {/* Second column (Sidebar) */}
@@ -281,7 +434,6 @@ function Course() {
           sx={{
             width: { xs: "97%", md: "32%" },
             margin: "10px",
-            order: { xs: -1, md: 2 },
             position: "relative",
           }}
         >
@@ -331,16 +483,44 @@ function Course() {
             </Box>
 
             {/* Tuition fee */}
-            <Box sx={{ mt: 1 }}>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold", color: "#FF4500" }}
-              >
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(course.tuitionFee)}
-              </Typography>
+            <Box sx={{ mt: 1, mx: "auto" }}>
+              {course.promotionPrice ? (
+                <Box display="flex" alignItems="baseline" gap={1}>
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: "bold", color: "#FF4500" }}
+                  >
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(course.tuitionFee - course.promotionPrice)}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      textDecoration: "line-through",
+                      textDecorationStyle: "dashed",
+                      color: "gray",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(course.tuitionFee)}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: "bold", color: "#FF4500" }}
+                >
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(course.tuitionFee)}
+                </Typography>
+              )}
             </Box>
 
             <Divider sx={{ my: 2 }}>
@@ -352,154 +532,7 @@ function Course() {
               />
             </Divider>
 
-            {/* --- DANH SÁCH LỚP HỌC --- */}
-            <Box sx={{ maxHeight: "350px", overflowY: "auto", pr: 0.5 }}>
-              {course.classInfos && course.classInfos.length > 0 ? (
-                <RadioGroup
-                  value={selectedClassId}
-                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
-                >
-                  <Stack spacing={1.5}>
-                    {course.classInfos.map((cls) => (
-                      <Paper
-                        key={cls.classId}
-                        variant="outlined"
-                        sx={{
-                          p: 1.5,
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                          borderColor:
-                            selectedClassId === cls.classId
-                              ? "#FF4500"
-                              : "#e0e0e0",
-                          backgroundColor:
-                            selectedClassId === cls.classId
-                              ? "#fff5f2"
-                              : "white",
-                          "&:hover": {
-                            borderColor: "#FF4500",
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                          },
-                          position: "relative",
-                        }}
-                        onClick={() => setSelectedClassId(cls.classId)}
-                      >
-                        <Box display="flex" alignItems="flex-start">
-                          <Radio
-                            value={cls.classId}
-                            size="small"
-                            sx={{
-                              mt: -0.5,
-                              ml: -1,
-                              color: "#FF4500",
-                              "&.Mui-checked": { color: "#FF4500" },
-                            }}
-                          />
-                          <Box flex={1}>
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="bold"
-                              color="#003E83"
-                              sx={{ lineHeight: 1.3, mb: 0.5 }}
-                            >
-                              {cls.className}
-                            </Typography>
 
-                            <Stack spacing={0.5}>
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faCalendarAlt}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  KG:{" "}
-                                  {new Date(cls.startDate).toLocaleDateString(
-                                    "vi-VN"
-                                  )}
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faClock}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {cls.schedulePattern} (
-                                  {cls.startTime.slice(0, 5)} -{" "}
-                                  {cls.endTime?.slice(0, 5)})
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faChalkboardTeacher}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  GV: {cls.instructorName}
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faDoorOpen}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {cls.roomName}
-                                </Typography>
-                              </Stack>
-                            </Stack>
-                          </Box>
-                        </Box>
-                      </Paper>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              ) : (
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    py: 2,
-                    bgcolor: "#f5f5f5",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Hiện chưa có lịch khai giảng.
-                  </Typography>
-                </Box>
-              )}
-            </Box>
 
             {/* Button đăng ký khóa học */}
             <Box sx={{ mt: 3 }}>
