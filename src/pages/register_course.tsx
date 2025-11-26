@@ -26,14 +26,12 @@ import { CourseGroupResponse, CourseModel } from "../model/course_model";
 import { getCategoryDetail } from "../services/category_service";
 import { getStudentInfo } from "../services/user_service";
 import { getCourseDetail } from "../services/course_services";
-import { axiosClient } from "../api/axios_client";
 import { StudentInfoResponse } from "../model/student";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
 import {
   faCalendarAlt,
   faClock,
   faChalkboardTeacher,
-  faDoorOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 

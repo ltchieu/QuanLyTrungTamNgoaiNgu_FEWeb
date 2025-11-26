@@ -14,17 +14,18 @@ import {
   CardContent,
   MenuItem,
   Alert,
+  Snackbar,
 } from "@mui/material";
 
 import WorkIcon from "@mui/icons-material/Work";
 import HomeIcon from "@mui/icons-material/Home";
-import PhoneIcon from "@mui/icons-material/Phone"
+import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
 import CakeIcon from "@mui/icons-material/Cake";
 import WcIcon from "@mui/icons-material/Wc";
 import BadgeIcon from "@mui/icons-material/Badge";
 import LockResetIcon from "@mui/icons-material/LockReset";
-import { getStudentInfo } from "../services/user_service";
+import { getStudentInfo, updateStudentInfo } from "../services/user_service";
 import useAxiosPrivate from "../hook/useAxiosPrivate"; // Hook bảo mật
 import { useAuth } from "../hook/useAuth";
 import { StudentInfoResponse } from "../model/student";
@@ -34,11 +35,14 @@ const ManageAccountPage: React.FC = () => {
   const { auth } = useAuth();
 
   // State lưu dữ liệu thật từ API
-  const [studentInfo, setStudentInfo] = useState<StudentInfoResponse | null>(null);
-  
+  const [studentInfo, setStudentInfo] = useState<StudentInfoResponse | null>(
+    null
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch Data khi component mount
   useEffect(() => {
@@ -57,15 +61,37 @@ const ManageAccountPage: React.FC = () => {
     };
 
     if (auth?.accessToken) {
-        fetchData();
+      fetchData();
     }
   }, [auth?.accessToken, axiosPrivate]);
 
-  const handleEditToggle = () => setIsEditing(!isEditing);
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Reset changes if canceling (optional, currently just toggles)
+      // To implement reset, we'd need a separate state for original data
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (field: keyof StudentInfoResponse, value: any) => {
+    if (studentInfo) {
+      setStudentInfo({ ...studentInfo, [field]: value });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!studentInfo) return;
+    try {
+      await updateStudentInfo(axiosPrivate, studentInfo);
+      setSuccessMessage("Cập nhật thông tin thành công!");
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error(err);
+      setError("Cập nhật thất bại. Vui lòng thử lại.");
+    }
+  };
 
   // Helper map giới tính (Boolean -> String)
-  // Giả sử: false = Nữ, true = Nam (Cần check lại DB của bạn)
-  const getGenderLabel = (gender: boolean) => (gender ? "Nam" : "Nữ");
   const getGenderValue = (gender: boolean) => (gender ? "true" : "false");
 
   if (loading) {
@@ -88,19 +114,33 @@ const ManageAccountPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={6000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(null)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
       <Grid container spacing={3}>
-        
         {/* === CỘT TRÁI: AVATAR & TÀI KHOẢN === */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, textAlign: "center", borderRadius: 3 }}>
             <Avatar
-                src={studentInfo.image} // Nếu là URL ảnh
-                alt={studentInfo.name}
-                sx={{ width: 100, height: 100, mx: "auto", mb: 2, fontSize: 40 }}
+              src={studentInfo.image} // Nếu là URL ảnh
+              alt={studentInfo.name}
+              sx={{ width: 100, height: 100, mx: "auto", mb: 2, fontSize: 40 }}
             >
-                {studentInfo.name.charAt(0)}
+              {studentInfo.name.charAt(0)}
             </Avatar>
-            
+
             <Typography variant="h5" fontWeight="bold">
               {studentInfo.name}
             </Typography>
@@ -145,12 +185,12 @@ const ManageAccountPage: React.FC = () => {
             <Divider />
             <CardContent>
               <Grid container spacing={2}>
-                
                 {/* Họ tên */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Họ và tên"
-                    defaultValue={studentInfo.name}
+                    value={studentInfo.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     fullWidth
                     disabled={!isEditing}
                     InputProps={{
@@ -165,7 +205,10 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Ngày sinh"
-                    defaultValue={studentInfo.dateOfBirth}
+                    value={studentInfo.dateOfBirth}
+                    onChange={(e) =>
+                      handleInputChange("dateOfBirth", e.target.value)
+                    }
                     type="date"
                     fullWidth
                     disabled={!isEditing}
@@ -182,7 +225,7 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Email"
-                    defaultValue={studentInfo.email}
+                    value={studentInfo.email}
                     fullWidth
                     disabled // Email thường là định danh, không cho sửa
                     InputProps={{
@@ -197,7 +240,10 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Số điện thoại"
-                    defaultValue={studentInfo.phoneNumber}
+                    value={studentInfo.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
                     fullWidth
                     disabled={!isEditing}
                     InputProps={{
@@ -212,7 +258,10 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Giới tính"
-                    defaultValue={getGenderValue(studentInfo.gender)}
+                    value={getGenderValue(studentInfo.gender)}
+                    onChange={(e) =>
+                      handleInputChange("gender", e.target.value === "true")
+                    }
                     fullWidth
                     disabled={!isEditing}
                     select
@@ -231,7 +280,8 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Nghề nghiệp"
-                    defaultValue={studentInfo.jobs}
+                    value={studentInfo.jobs}
+                    onChange={(e) => handleInputChange("jobs", e.target.value)}
                     fullWidth
                     disabled={!isEditing}
                     InputProps={{
@@ -246,7 +296,10 @@ const ManageAccountPage: React.FC = () => {
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     label="Địa chỉ"
-                    defaultValue={studentInfo.address}
+                    value={studentInfo.address}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
                     fullWidth
                     disabled={!isEditing}
                     InputProps={{
@@ -263,7 +316,7 @@ const ManageAccountPage: React.FC = () => {
                     <Button
                       variant="contained"
                       size="large"
-                      onClick={handleEditToggle} // TODO: Gọi API update tại đây
+                      onClick={handleSave}
                     >
                       Lưu thay đổi
                     </Button>
@@ -273,7 +326,6 @@ const ManageAccountPage: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-
       </Grid>
     </Container>
   );

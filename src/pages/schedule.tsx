@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Button,
@@ -12,6 +12,7 @@ import {
   TableHead,
   TableRow,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import {
@@ -22,19 +23,19 @@ import {
   subWeeks,
   isSameDay,
   parseISO,
-  parse,
 } from "date-fns";
-import { vi } from "date-fns/locale"; // Tiếng Việt
+import { vi } from "date-fns/locale";
 
 // Icons
 import PrintIcon from "@mui/icons-material/Print";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import EventIcon from "@mui/icons-material/Event";
-import { BuoiHocDto } from "../model/schedule_model";
+import { WeeklyScheduleResponse, SessionInfo } from "../model/schedule_model";
+import { getWeeklySchedule } from "../services/schedule_service";
+import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 // 1. ĐỊNH NGHĨA KIỂU DỮ LIỆU
-// ---------------------------------
 interface ScheduleItem {
   id: string;
   title: string;
@@ -46,63 +47,7 @@ interface ScheduleItem {
 
 type ScheduleType = "Nghe" | "Nói" | "Đọc" | "Viết" | "tamngung";
 
-// 2. MOCK DATA
-// ---------------------------------
-const MOCK_API_RESPONSE: BuoiHocDto[] = [
-  {
-    maBuoiHoc: "1",
-    ngayHoc: "2025-11-10",
-    gioBatDau: "08:00", 
-    tenKhoaHoc: "IELTS Foundation",
-    tenGiangVien: "Trần A",
-    tenPhong: "Phòng A101",
-    trangThai: "Đang hoạt động",
-    tenKyNang: "Nghe",
-  },
-  {
-    maBuoiHoc: "2",
-    ngayHoc: "2025-11-11",
-    gioBatDau: "14:00", 
-    tenKhoaHoc: "IELTS Speaking",
-    tenGiangVien: "Nguyễn B",
-    tenPhong: "Phòng Lab 02",
-    trangThai: "Đang hoạt động",
-    tenKyNang: "Nói",
-  },
-  {
-    maBuoiHoc: "3",
-    ngayHoc: "2025-11-13",
-    gioBatDau: "18:30",
-    tenKhoaHoc: "IELTS Reading",
-    tenGiangVien: "Lê C",
-    tenPhong: "Phòng Online",
-    trangThai: "Đang hoạt động",
-    tenKyNang: "Đọc",
-  },
-  {
-    maBuoiHoc: "4",
-    ngayHoc: "2025-11-14",
-    gioBatDau: "09:00",
-    tenKhoaHoc: "IELTS Writing",
-    tenGiangVien: "Võ D",
-    tenPhong: "Giảng đường 1",
-    trangThai: "Đang hoạt động",
-    tenKyNang: "Viết",
-  },
-  {
-    maBuoiHoc: "5",
-    ngayHoc: "2025-11-12",
-    gioBatDau: "08:00",
-    tenKhoaHoc: "Nghỉ lễ 20/11",
-    tenGiangVien: "Thông báo",
-    tenPhong: "N/A",
-    trangThai: "Tạm dừng",
-    tenKyNang: "",
-  },
-];
-
 // 3. CÁC HẰNG SỐ GIAO DIỆN
-// ---------------------------------
 const TIME_SLOTS = ["Sáng", "Chiều", "Tối"];
 
 const LEGEND_ITEMS: { label: string; type: ScheduleType }[] = [
@@ -121,49 +66,32 @@ const COLORS: Record<ScheduleType, string> = {
   tamngung: "#ef9a9a",
 };
 
-const mapApiToUi = (dto: BuoiHocDto): ScheduleItem => {
-  const getSlot = (time: string): "Sáng" | "Chiều" | "Tối" => {
-    try {
-      const hour = parse(time, "HH:mm", new Date()).getHours();
-      if (hour < 12) return "Sáng";
-      if (hour < 18) return "Chiều";
-      return "Tối";
-    } catch {
-      return "Sáng";
-    }
-  };
-
+const mapSessionToUi = (session: SessionInfo): ScheduleItem => {
   const getType = (): ScheduleType => {
     // Ưu tiên 1: Tạm ngưng
-    if (dto.trangThai === "Tạm dừng") return "tamngung";
+    if (session.status === "Tạm dừng") return "tamngung";
 
-    // Ưu tiên 2: Dựa vào Kỹ năng
-    switch (dto.tenKyNang) {
-      case "Nghe":
-        return "Nghe";
-      case "Nói":
-        return "Nói";
-      case "Đọc":
-        return "Đọc";
-      case "Viết":
-        return "Viết";
-      default:
-        return "tamngung";
-    }
+    // Ưu tiên 2: Dựa vào tên khóa học hoặc kỹ năng (nếu có)
+    const lowerName = session.courseName.toLowerCase();
+    if (lowerName.includes("listening") || lowerName.includes("nghe")) return "Nghe";
+    if (lowerName.includes("speaking") || lowerName.includes("nói")) return "Nói";
+    if (lowerName.includes("reading") || lowerName.includes("đọc")) return "Đọc";
+    if (lowerName.includes("writing") || lowerName.includes("viết")) return "Viết";
+
+    return "tamngung";
   };
 
   return {
-    id: dto.maBuoiHoc,
-    title: dto.tenKhoaHoc,
-    date: dto.ngayHoc,
-    timeSlot: getSlot(dto.gioBatDau),
+    id: session.sessionId.toString(),
+    title: session.courseName,
+    date: session.sessionDate,
+    timeSlot: "Sáng", // Will be overridden
     type: getType(),
-    details: `${dto.tenPhong} - GV: ${dto.tenGiangVien}`,
+    details: `${session.roomName} - GV: ${session.instructorName}`,
   };
 };
 
 // 4. COMPONENT CON: Hiển thị 1 ô lịch
-// ---------------------------------
 const ScheduleItemCard: React.FC<{ item: ScheduleItem }> = ({ item }) => (
   <Paper
     elevation={1}
@@ -172,7 +100,6 @@ const ScheduleItemCard: React.FC<{ item: ScheduleItem }> = ({ item }) => (
       mb: 0.5,
       backgroundColor: COLORS[item.type],
       borderLeft: `5px solid ${COLORS[item.type]}`,
-      borderColor: `darken(${COLORS[item.type]}, 0.2)`,
     }}
   >
     <Typography variant="body2" fontWeight="bold">
@@ -185,7 +112,6 @@ const ScheduleItemCard: React.FC<{ item: ScheduleItem }> = ({ item }) => (
 );
 
 // 5. COMPONENT CON: Hiển thị chú thích
-// ---------------------------------
 const ScheduleLegend: React.FC = () => (
   <Paper
     elevation={0}
@@ -216,14 +142,32 @@ const ScheduleLegend: React.FC = () => (
 );
 
 // 6. COMPONENT CHÍNH: WeeklySchedule
-// ---------------------------------
 const WeeklySchedule: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const apiData = MOCK_API_RESPONSE;
+  const [scheduleData, setScheduleData] = useState<WeeklyScheduleResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const axiosPrivate = useAxiosPrivate();
 
-  const scheduleItems = useMemo(() => {
-    return MOCK_API_RESPONSE.map(mapApiToUi);
-  }, [apiData]);
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      setLoading(true);
+      try {
+        const formattedDate = format(currentDate, "yyyy-MM-dd");
+        console.log("Fetching schedule for:", formattedDate);
+        const response = await getWeeklySchedule(axiosPrivate, formattedDate);
+        console.log("Schedule Response:", response);
+        if (response.data) {
+          setScheduleData(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch schedule", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
+  }, [currentDate, axiosPrivate]);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -239,6 +183,34 @@ const WeeklySchedule: React.FC = () => {
       setCurrentDate(newDate);
     }
   };
+
+  // Helper to normalize period from API
+  const normalizePeriod = (period: string): "Sáng" | "Chiều" | "Tối" => {
+    const p = period.toLowerCase();
+    if (p.includes("sáng") || p.includes("morning") || p.includes("sang")) return "Sáng";
+    if (p.includes("chiều") || p.includes("afternoon") || p.includes("chieu")) return "Chiều";
+    if (p.includes("tối") || p.includes("evening") || p.includes("toi")) return "Tối";
+    return "Sáng";
+  };
+
+  // Flatten schedule data for easier rendering
+  const scheduleItems = useMemo(() => {
+    if (!scheduleData) return [];
+    const items: ScheduleItem[] = [];
+
+    scheduleData.days.forEach(day => {
+      day.periods.forEach(period => {
+        period.sessions.forEach(session => {
+          const item = mapSessionToUi(session);
+
+          item.timeSlot = normalizePeriod(period.period);
+          items.push(item);
+        });
+      });
+    });
+    return items;
+  }, [scheduleData]);
+
 
   return (
     <Container maxWidth="xl" sx={{ my: 3 }}>
@@ -297,82 +269,91 @@ const WeeklySchedule: React.FC = () => {
 
       {/* === LỊCH HỌC === */}
       <TableContainer component={Paper} sx={{ border: "1px solid #ccc" }}>
-        <Table sx={{ minWidth: 700, borderCollapse: "collapse" }}>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                sx={{
-                  width: 90,
-                  bgcolor: "#f4f6f8",
-                  border: "1px solid #ddd",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                }}
-              >
-                Ca học
-              </TableCell>
-              {weekDays.map((day) => (
-                <TableCell
-                  key={day.toISOString()}
-                  sx={{
-                    bgcolor: "#3949ab",
-                    color: "white",
-                    border: "1px solid #ddd",
-                    textAlign: "center",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {format(day, "EEEE", { locale: vi })}
-                  <br />
-                  {format(day, "dd/MM/yyyy")}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {TIME_SLOTS.map((slot) => (
-              <TableRow key={slot}>
-                {/* Cột Ca học */}
+        {loading ? (
+          <Box display="flex" justifyContent="center" p={5}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Table sx={{ minWidth: 700, borderCollapse: "collapse" }}>
+            <TableHead>
+              <TableRow>
                 <TableCell
                   sx={{
-                    bgcolor: "#fffde7",
+                    width: 90,
+                    bgcolor: "#f4f6f8",
                     border: "1px solid #ddd",
                     textAlign: "center",
                     fontWeight: "bold",
-                    verticalAlign: "top",
                   }}
                 >
-                  {slot}
+                  Ca học
                 </TableCell>
-                
-                {/* 7 Cột ngày */}
-                {weekDays.map((day) => {
-                  const items = scheduleItems.filter(
-                    (item) =>
-                      isSameDay(parseISO(item.date), day) &&
-                      item.timeSlot === slot
-                  );
-
-                  return (
-                    <TableCell
-                      key={day.toISOString()}
-                      sx={{
-                        border: "1px solid #eee",
-                        verticalAlign: "top",
-                        height: 150,
-                        p: 0.5,
-                      }}
-                    >
-                      {items.map((item) => (
-                        <ScheduleItemCard key={item.id} item={item} />
-                      ))}
-                    </TableCell>
-                  );
-                })}
+                {weekDays.map((day) => (
+                  <TableCell
+                    key={day.toISOString()}
+                    sx={{
+                      bgcolor: "#3949ab",
+                      color: "white",
+                      border: "1px solid #ddd",
+                      textAlign: "center",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {format(day, "EEEE", { locale: vi })}
+                    <br />
+                    {format(day, "dd/MM/yyyy")}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {TIME_SLOTS.map((slot) => (
+                <TableRow key={slot}>
+                  {/* Cột Ca học */}
+                  <TableCell
+                    sx={{
+                      bgcolor: "#fffde7",
+                      border: "1px solid #ddd",
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    {slot}
+                  </TableCell>
+
+                  {/* 7 Cột ngày */}
+                  {weekDays.map((day) => {
+                    const items = scheduleItems.filter(
+                      (item) => {
+                        // Compare dates as strings YYYY-MM-DD to avoid timezone issues
+                        const itemDateStr = item.date; // Assuming item.date is YYYY-MM-DD from API
+                        const dayStr = format(day, "yyyy-MM-dd");
+                        return itemDateStr === dayStr && item.timeSlot === slot;
+                      }
+                    );
+
+                    return (
+                      <TableCell
+                        key={day.toISOString()}
+                        sx={{
+                          border: "1px solid #eee",
+                          verticalAlign: "top",
+                          height: 150,
+                          p: 0.5,
+                        }}
+                      >
+                        {items.map((item) => (
+                          <ScheduleItemCard key={item.id} item={item} />
+                        ))}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </TableContainer>
 
       {/* === CHÚ THÍCH === */}

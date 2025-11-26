@@ -4,8 +4,10 @@ export interface CourseName{
 }
 
 export interface Objective {
-  id: number;
-  objectiveName: string;
+  id?: number; 
+  objectiveId?: number; 
+  objectiveName?: string; 
+  description?: string; 
 }
 
 export interface Document {
@@ -56,19 +58,35 @@ export interface CourseCategoryResponse {
   name: string;
 }
 
+export interface ClassScheduleResponse {
+  classId: number;
+  className: string;
+  startDate: string;
+  endDate: string;
+  schedule: string; // e.g. "2-4-6"
+  startTime: string;
+  endTime: string;
+  roomName: string;
+  instructorName: string;
+  branchName: string;
+}
+
 export interface ActiveCourseResponse {
-  courseId: string;
+  courseId: number | string;
   courseName: string;
   tuitionFee: number;
+  promotionPrice?: number;
   entryLevel: string;
   targetLevel: string;
   description: string;
-  studyHours: string;
+  studyHours: number | string;
   image: string;
+  classScheduleResponse?: ClassScheduleResponse;
+  objectives?: Objective[];
 }
 
 export interface CourseGroupResponse {
-  categoryId: string;
+  categoryId: number | string;
   categoryName: string;
   categoryLevel: string;
   categoryDescription: string;

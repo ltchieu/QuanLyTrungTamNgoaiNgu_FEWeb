@@ -48,7 +48,7 @@ const CategoryPage = (props: Props) => {
     if (isAllSelected) {
       setSelectedCourses([]);
     } else {
-      setSelectedCourses(allCourseIds);
+      setSelectedCourses(allCourseIds.map((id) => String(id)));
     }
   };
 
@@ -252,12 +252,12 @@ const CategoryPage = (props: Props) => {
 
                 {/* Danh sách các khóa học */}
                 {categoryDetail.courses.map((course) => {
-                  const isSelected = selectedCourses.includes(course.courseId);
+                  const isSelected = selectedCourses.includes(String(course.courseId));
                   return (
                     <Button
                       key={course.courseId}
                       variant="contained"
-                      onClick={() => handleCourseToggle(course.courseId)}
+                      onClick={() => handleCourseToggle(String(course.courseId))}
                       sx={{
                         borderRadius: "30px",
                         fontWeight: "bold",                        
