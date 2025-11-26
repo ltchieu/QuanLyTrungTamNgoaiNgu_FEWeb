@@ -34,7 +34,7 @@ import CourseRecommendCard from "../componets/course_recommend_card";
 
 function Course() {
   const { id } = useParams();
-  const [searchParams] = useSearchParams(); 
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [course, setCourse] = useState<CourseModel | null>(null);
@@ -65,8 +65,7 @@ function Course() {
             imageSrc: course.image,
             title: course.courseName,
             summaryItems: [
-              `${course.numberOfSessions ?? 20} buổi - ${
-                course.studyHours ?? 40
+              `${course.numberOfSessions ?? 20} buổi - ${course.studyHours ?? 40
               } giờ học`,
               "Hình thức: Offline",
               course.description,
@@ -101,7 +100,7 @@ function Course() {
     const finalCategoryId = categoryIdFromUrl
 
     if (finalCategoryId) {
-        params.append("categoryId", String(finalCategoryId));
+      params.append("categoryId", String(finalCategoryId));
     }
 
     params.append("courses", String(course.courseId));
@@ -442,7 +441,7 @@ function Course() {
                                 >
                                   {cls.schedulePattern} (
                                   {cls.startTime.slice(0, 5)} -{" "}
-                                  {cls.endTime.slice(0, 5)})
+                                  {cls.endTime?.slice(0, 5)})
                                 </Typography>
                               </Stack>
 

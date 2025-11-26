@@ -17,15 +17,13 @@ import {
   Person,
   School,
   CheckCircle,
-  Cancel,
 } from "@mui/icons-material";
-import { ActiveCourseResponse } from "../model/course_model";
+import { ClassInfo } from "../model/course_model";
 import { getRegisteredCourses } from "../services/registered_course_service";
-import { getImageUrl } from "../services/course_services";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 const RegisteredCoursePage: React.FC = () => {
-  const [courses, setCourses] = useState<ActiveCourseResponse[]>([]);
+  const [courses, setCourses] = useState<ClassInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const axiosPrivate = useAxiosPrivate();
 
@@ -33,8 +31,13 @@ const RegisteredCoursePage: React.FC = () => {
     const fetchCourses = async () => {
       try {
         const response = await getRegisteredCourses(axiosPrivate);
-        if (response.data && response.data.courses) {
-          setCourses(response.data.courses);
+        console.log("Registered Courses Response:", response);
+
+        if (Array.isArray(response.data)) {
+          setCourses(response.data);
+        } else {
+          // Fallback or error handling if structure doesn't match
+          console.warn("Unexpected response format", response);
         }
       } catch (error) {
         console.error("Failed to fetch registered courses:", error);
@@ -95,7 +98,7 @@ const RegisteredCoursePage: React.FC = () => {
                 <Box sx={{ position: "relative", p: "10px" }}>
                   <Box
                     component="img"
-                    src={getImageUrl(course.image)}
+                    src="https://via.placeholder.com/400x200?text=Course+Image" // Placeholder as image is not in ClassInfo
                     alt={course.courseName}
                     sx={{
                       width: "100%",
@@ -103,14 +106,9 @@ const RegisteredCoursePage: React.FC = () => {
                       objectFit: "cover",
                       borderRadius: "15px",
                     }}
-                    onError={(e: any) => {
-                      e.target.src = "https://via.placeholder.com/400x200?text=Course+Image";
-                    }}
                   />
-                  {/* Payment status is not available in ActiveCourseResponse, assuming paid or hiding */}
-                  {/* If needed, we can check if there's a way to get invoice info, but for now hiding or assuming active means paid/enrolled */}
                   <Chip
-                    label="Đang học"
+                    label={typeof course.status === 'string' ? course.status : (course.status ? "Đang học" : "Đã kết thúc")}
                     color="success"
                     icon={<CheckCircle />}
                     sx={{
@@ -136,7 +134,7 @@ const RegisteredCoursePage: React.FC = () => {
                   <Box display="flex" alignItems="center" gap={1} mb={1}>
                     <School color="action" fontSize="small" />
                     <Typography variant="body1" fontWeight="500">
-                      {course.classScheduleResponse?.className || "Chưa xếp lớp"}
+                      {course.className || "Chưa xếp lớp"}
                     </Typography>
                   </Box>
 
@@ -151,7 +149,7 @@ const RegisteredCoursePage: React.FC = () => {
                             Giảng viên
                           </Typography>
                           <Typography variant="body2" fontWeight="500">
-                            {course.classScheduleResponse?.instructorName || "TBD"}
+                            {course.instructorName || "TBD"}
                           </Typography>
                         </Box>
                       </Box>
@@ -164,7 +162,7 @@ const RegisteredCoursePage: React.FC = () => {
                             Phòng học
                           </Typography>
                           <Typography variant="body2" fontWeight="500">
-                            {course.classScheduleResponse?.roomName || "TBD"}
+                            {course.roomName || "TBD"}
                           </Typography>
                         </Box>
                       </Box>
@@ -177,8 +175,8 @@ const RegisteredCoursePage: React.FC = () => {
                             Ngày bắt đầu
                           </Typography>
                           <Typography variant="body2" fontWeight="500">
-                            {course.classScheduleResponse?.startDate
-                              ? new Date(course.classScheduleResponse.startDate).toLocaleDateString("vi-VN")
+                            {course.startDate
+                              ? new Date(course.startDate).toLocaleDateString("vi-VN")
                               : "TBD"}
                           </Typography>
                         </Box>
@@ -192,8 +190,8 @@ const RegisteredCoursePage: React.FC = () => {
                             Lịch học
                           </Typography>
                           <Typography variant="body2" fontWeight="500">
-                            {course.classScheduleResponse?.schedule || "TBD"}
-                            {course.classScheduleResponse?.startTime ? ` (${course.classScheduleResponse.startTime.slice(0, 5)})` : ""}
+                            {course.schedulePattern || "TBD"}
+                            {course.startTime ? ` (${course.startTime.slice(0, 5)})` : ""}
                           </Typography>
                         </Box>
                       </Box>

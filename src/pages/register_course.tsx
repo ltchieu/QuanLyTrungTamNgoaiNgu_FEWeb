@@ -138,13 +138,13 @@ const RegisterPage: React.FC = () => {
         if (paymentRes.data.length > 0) {
           setSelectedPayment(paymentRes.data[0].maPhuongThuc);
         }
-        
+
         // Load student info
         try {
-            const studentData = await getStudentInfo(axiosPrivate);
-            setStudentInfo(studentData);
+          const studentData = await getStudentInfo(axiosPrivate);
+          setStudentInfo(studentData);
         } catch (error) {
-            console.error("Failed to load student info", error);
+          console.error("Failed to load student info", error);
         }
 
       } catch (err) {
@@ -167,9 +167,9 @@ const RegisterPage: React.FC = () => {
         categoryDetail.courses.some((course) => String(course.courseId) === id)
       );
 
-      console.log("validInitialIds: " + validInitialIds )
-      console.log("initialCourseIds: " + initialCourseIds )
-      console.log("categoryDetail: " + categoryDetail )
+      console.log("validInitialIds: " + validInitialIds)
+      console.log("initialCourseIds: " + initialCourseIds)
+      console.log("categoryDetail: " + categoryDetail)
 
       setSelectedCourses(validInitialIds);
       setLoading(false);
@@ -282,9 +282,9 @@ const RegisterPage: React.FC = () => {
     // Validate
     // Validate
     if (!studentInfo) {
-        alert("Không tìm thấy thông tin học viên.");
-        setSubmitting(false);
-        return;
+      alert("Không tìm thấy thông tin học viên.");
+      setSubmitting(false);
+      return;
     }
     if (selectedCourses.length === 0) {
       alert("Vui lòng chọn ít nhất một khóa học.");
@@ -451,12 +451,12 @@ const RegisterPage: React.FC = () => {
                                     cursor: "pointer",
                                     borderColor:
                                       selectedClasses[course.courseId] ===
-                                      cls.classId
+                                        cls.classId
                                         ? "#FF4500"
                                         : "#e0e0e0",
                                     bgcolor:
                                       selectedClasses[course.courseId] ===
-                                      cls.classId
+                                        cls.classId
                                         ? "#fff5f2"
                                         : "white",
                                   }}
@@ -531,7 +531,7 @@ const RegisterPage: React.FC = () => {
                                           >
                                             {cls.schedulePattern} (
                                             {cls.startTime.slice(0, 5)} -{" "}
-                                            {cls.endTime.slice(0, 5)})
+                                            {cls.endTime ? cls.endTime.slice(0, 5) : "..."})
                                           </Typography>
                                         </Box>
                                         <Box

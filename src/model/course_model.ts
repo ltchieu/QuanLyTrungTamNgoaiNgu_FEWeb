@@ -102,9 +102,9 @@ export interface ClassInfo {
   startDate: string;
   endDate: string | null;
   startTime: string;
-  endTime: string;
+  endTime: string | null;
   schedulePattern: string;
-  status: boolean;
+  status: string | boolean; // Allow both for compatibility
   maxCapacity: number | null;
   currentEnrollment: number | null;
 }
