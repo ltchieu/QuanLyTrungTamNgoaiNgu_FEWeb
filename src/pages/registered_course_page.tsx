@@ -9,6 +9,15 @@ import {
   Chip,
   Divider,
   CircularProgress,
+  Button,
+  Rating,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   CalendarToday,
@@ -17,37 +26,105 @@ import {
   Person,
   School,
   CheckCircle,
+  RateReview,
 } from "@mui/icons-material";
 import { ClassInfo } from "../model/course_model";
+import { CourseEvaluation } from "../model/course_evaluation";
 import { getRegisteredCourses } from "../services/registered_course_service";
+import {
+  submitEvaluation,
+  getStudentEvaluations,
+  isCourseEvaluated,
+} from "../services/evaluation_service";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 const RegisteredCoursePage: React.FC = () => {
   const [courses, setCourses] = useState<ClassInfo[]>([]);
+  const [evaluations, setEvaluations] = useState<CourseEvaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const axiosPrivate = useAxiosPrivate();
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await getRegisteredCourses(axiosPrivate);
-        console.log("Registered Courses Response:", response);
+  // Dialog State
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<ClassInfo | null>(null);
+  const [rating, setRating] = useState<number | null>(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-        if (Array.isArray(response.data)) {
-          setCourses(response.data);
+  // Notification State
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [coursesRes, evaluationsRes] = await Promise.all([
+          getRegisteredCourses(axiosPrivate),
+          getStudentEvaluations(),
+        ]);
+
+        if (Array.isArray(coursesRes.data)) {
+          setCourses(coursesRes.data);
         } else {
-          // Fallback or error handling if structure doesn't match
-          console.warn("Unexpected response format", response);
+          console.warn("Unexpected response format", coursesRes);
         }
+        setEvaluations(evaluationsRes);
       } catch (error) {
-        console.error("Failed to fetch registered courses:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
+    fetchData();
   }, [axiosPrivate]);
+
+  const handleOpenEvaluation = (course: ClassInfo) => {
+    setSelectedCourse(course);
+    setRating(5);
+    setComment("");
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedCourse(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedCourse || !rating) return;
+
+    setSubmitting(true);
+    try {
+      const evaluationData: CourseEvaluation = {
+        soSao: rating,
+        nhanXet: comment,
+        maCTHD: selectedCourse.classId,
+        courseId: 0,
+        courseName: selectedCourse.courseName,
+      };
+
+      await submitEvaluation(evaluationData);
+
+      setSnackbarMessage("Cảm ơn bạn đã gửi đánh giá!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      handleCloseDialog();
+
+      // Refresh evaluations
+      const newEvaluations = await getStudentEvaluations();
+      setEvaluations(newEvaluations);
+    } catch (error) {
+      console.error("Error submitting evaluation:", error);
+      setSnackbarMessage("Có lỗi xảy ra, vui lòng thử lại.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -70,139 +147,220 @@ const RegisteredCoursePage: React.FC = () => {
         gutterBottom
         sx={{ mb: 4, color: "#2c3e50" }}
       >
-        Khóa học đã đăng ký
+        Lớp học đã đăng ký
       </Typography>
 
       {courses.length === 0 ? (
         <Typography variant="body1" color="text.secondary" textAlign="center">
-          Bạn chưa đăng ký khóa học nào.
+          Bạn chưa đăng ký lớp học nào.
         </Typography>
       ) : (
         <Grid container spacing={3}>
-          {courses.map((course, index) => (
-            <Grid size={{ xs: 12, md: 6 }} key={index}>
-              <Card
-                elevation={3}
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: 2,
-                  transition: "transform 0.2s",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                <Box sx={{ position: "relative", p: "10px" }}>
-                  <Box
-                    component="img"
-                    src="https://via.placeholder.com/400x200?text=Course+Image" // Placeholder as image is not in ClassInfo
-                    alt={course.courseName}
-                    sx={{
-                      width: "100%",
-                      height: 200,
-                      objectFit: "cover",
-                      borderRadius: "15px",
-                    }}
-                  />
-                  <Chip
-                    label={typeof course.status === 'string' ? course.status : (course.status ? "Đang học" : "Đã kết thúc")}
-                    color="success"
-                    icon={<CheckCircle />}
-                    sx={{
-                      position: "absolute",
-                      top: 16,
-                      right: 16,
-                      fontWeight: "bold",
-                    }}
-                  />
-                </Box>
-
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    gutterBottom
-                    color="primary"
-                    sx={{ minHeight: 64 }}
-                  >
-                    {course.courseName}
-                  </Typography>
-
-                  <Box display="flex" alignItems="center" gap={1} mb={1}>
-                    <School color="action" fontSize="small" />
-                    <Typography variant="body1" fontWeight="500">
-                      {course.className || "Chưa xếp lớp"}
-                    </Typography>
+          {courses.map((course, index) => {
+            const evaluation = isCourseEvaluated(evaluations, course.classId);
+            return (
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={index}>
+                <Card
+                  elevation={3}
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: 3,
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    },
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box sx={{ position: "relative", height: 140, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      opacity: 0.1,
+                      backgroundImage: 'radial-gradient(#fff 2px, transparent 2px)',
+                      backgroundSize: '20px 20px'
+                    }} />
+                    <School sx={{ fontSize: 60, color: 'white', opacity: 0.8 }} />
+                    <Chip
+                      label={course.status}
+                      color={course.status === 'Active' || course.status === 'Đang học' ? "success" : "default"}
+                      size="small"
+                      sx={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        fontWeight: "bold",
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        color: 'text.primary'
+                      }}
+                    />
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
+                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      gutterBottom
+                      color="text.primary"
+                      sx={{
+                        minHeight: 56,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {course.courseName}
+                    </Typography>
 
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 6 }}>
-                      <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="subtitle1" color="primary.main" fontWeight="600" gutterBottom>
+                      {course.className}
+                    </Typography>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Box display="flex" flexDirection="column" gap={1.5}>
+                      <Box display="flex" alignItems="center" gap={1.5}>
                         <Person color="action" fontSize="small" />
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Giảng viên
-                          </Typography>
-                          <Typography variant="body2" fontWeight="500">
-                            {course.instructorName || "TBD"}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          GV: <Box component="span" fontWeight="500" color="text.primary">{course.instructorName}</Box>
+                        </Typography>
                       </Box>
-                    </Grid>
-                    <Grid size={{ xs: 6 }}>
-                      <Box display="flex" alignItems="center" gap={1}>
+
+                      <Box display="flex" alignItems="center" gap={1.5}>
                         <Room color="action" fontSize="small" />
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Phòng học
-                          </Typography>
-                          <Typography variant="body2" fontWeight="500">
-                            {course.roomName || "TBD"}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Phòng: <Box component="span" fontWeight="500" color="text.primary">{course.roomName}</Box>
+                        </Typography>
                       </Box>
-                    </Grid>
-                    <Grid size={{ xs: 6 }}>
-                      <Box display="flex" alignItems="center" gap={1}>
+
+                      <Box display="flex" alignItems="center" gap={1.5}>
                         <CalendarToday color="action" fontSize="small" />
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Ngày bắt đầu
-                          </Typography>
-                          <Typography variant="body2" fontWeight="500">
-                            {course.startDate
-                              ? new Date(course.startDate).toLocaleDateString("vi-VN")
-                              : "TBD"}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" color="text.secondary">
+                          {course.startDate ? new Date(course.startDate).toLocaleDateString("vi-VN") : "..."} - {course.endDate ? new Date(course.endDate).toLocaleDateString("vi-VN") : "..."}
+                        </Typography>
                       </Box>
-                    </Grid>
-                    <Grid size={{ xs: 6 }}>
-                      <Box display="flex" alignItems="center" gap={1}>
+
+                      <Box display="flex" alignItems="center" gap={1.5}>
                         <AccessTime color="action" fontSize="small" />
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Lịch học
-                          </Typography>
-                          <Typography variant="body2" fontWeight="500">
-                            {course.schedulePattern || "TBD"}
-                            {course.startTime ? ` (${course.startTime.slice(0, 5)})` : ""}
-                          </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {course.schedulePattern} ({course.startTime.slice(0, 5)} - {course.endTime ? course.endTime.slice(0, 5) : "..."})
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Enrollment Progress if available */}
+                    {(course.maxCapacity && course.currentEnrollment) && (
+                      <Box mt={2}>
+                        <Box display="flex" justifyContent="space-between" mb={0.5}>
+                          <Typography variant="caption" color="text.secondary">Sĩ số</Typography>
+                          <Typography variant="caption" fontWeight="bold">{course.currentEnrollment}/{course.maxCapacity}</Typography>
+                        </Box>
+                        <Box sx={{ width: '100%', height: 6, bgcolor: 'grey.100', borderRadius: 3, overflow: 'hidden' }}>
+                          <Box sx={{
+                            width: `${Math.min((course.currentEnrollment / course.maxCapacity) * 100, 100)}%`,
+                            height: '100%',
+                            bgcolor: 'primary.main'
+                          }} />
                         </Box>
                       </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                    )}
+
+                    <Box mt={3} pt={2} borderTop={1} borderColor="divider">
+                      {evaluation ? (
+                        <Box>
+                          <Box display="flex" alignItems="center" mb={1}>
+                            <CheckCircle color="success" sx={{ mr: 1, fontSize: 20 }} />
+                            <Typography variant="subtitle2" fontWeight="bold" color="success.main">
+                              Đã đánh giá
+                            </Typography>
+                          </Box>
+                          <Rating value={evaluation.soSao} readOnly size="small" />
+                        </Box>
+                      ) : (
+                        <Button
+                          variant="outlined"
+                          startIcon={<RateReview />}
+                          onClick={() => handleOpenEvaluation(course)}
+                          fullWidth
+                          size="small"
+                        >
+                          Đánh giá
+                        </Button>
+                      )}
+                    </Box>
+
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
+
+      {/* Evaluation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Đánh giá khóa học</DialogTitle>
+        <DialogContent>
+          {selectedCourse && (
+            <Box py={1}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                {selectedCourse.courseName} - {selectedCourse.className}
+              </Typography>
+
+              <Box display="flex" flexDirection="column" alignItems="center" my={3}>
+                <Typography component="legend">Chất lượng khóa học</Typography>
+                <Rating
+                  name="simple-controlled"
+                  value={rating}
+                  onChange={(event, newValue) => {
+                    setRating(newValue);
+                  }}
+                  size="large"
+                />
+              </Box>
+
+              <TextField
+                autoFocus
+                margin="dense"
+                id="comment"
+                label="Nhận xét của bạn (Tùy chọn)"
+                type="text"
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Hãy chia sẻ cảm nhận của bạn về khóa học, giảng viên, cơ sở vật chất..."
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="inherit">Hủy</Button>
+          <Button onClick={handleSubmit} variant="contained" disabled={submitting || !rating}>
+            {submitting ? <CircularProgress size={24} /> : "Gửi đánh giá"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

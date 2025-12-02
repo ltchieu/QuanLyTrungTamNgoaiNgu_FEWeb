@@ -12,6 +12,8 @@ import StudentDocumentPage from "../pages/student_document_page";
 import PersistLogin from "../componets/persist_login";
 import RequireAuth from "../model/require_auth";
 
+
+
 function AppRoutes() {
   return (
     <div>
@@ -42,11 +44,14 @@ function AppRoutes() {
                 path="/account/profile"
                 element={<ManageAccountPage />}
               ></Route>
+
             </Route>
+
+
           </Route>
         </Route>
       </Routes>
-    </div>
+    </div >
   );
 }
 export default AppRoutes;
