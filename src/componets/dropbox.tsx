@@ -153,29 +153,75 @@ const DropBox: React.FC<SelectProps> = ({ label, items, isMobile = false }) => {
                   ) : (
                     <KeyboardArrowRightIcon fontSize="small" />
                   ))}
+
+                {/* Danh sách con (Cấp 2 - Khóa học) - Nested inside parent li */}
+                {!isMobile &&
+                  item.subItems &&
+                  item.subItems.length > 0 &&
+                  activeSubMenu === item.value && (
+                    <ul
+                      style={{
+                        position: "absolute",
+                        top: "0",
+                        left: "100%",
+                        marginLeft: "1px",
+                        backgroundColor: "white",
+                        listStyle: "none",
+                        padding: "10px 0",
+                        margin: 0,
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        borderRadius: "8px",
+                        zIndex: 1000,
+                        minWidth: "200px",
+                      }}
+                    >
+                      {item.subItems.map((subItem) => (
+                        <li
+                          key={subItem.value}
+                          onClick={(e) => handleC2ItemClick(e, subItem.link)}
+                          style={{
+                            padding: "10px 20px",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            textAlign: "left",
+                            whiteSpace: "nowrap",
+                            color: "black",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.target as HTMLElement).style.backgroundColor =
+                              "rgba(26,29,175,0.05)";
+                            (e.target as HTMLElement).style.color =
+                              "rgba(235, 55, 10, 1)";
+                            (e.target as HTMLElement).style.paddingLeft = "25px";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.target as HTMLElement).style.backgroundColor =
+                              "transparent";
+                            (e.target as HTMLElement).style.color = "black";
+                            (e.target as HTMLElement).style.paddingLeft = "20px";
+                          }}
+                        >
+                          {subItem.label}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
               </li>
 
-              {/* Danh sách con (Cấp 2 - Khóa học) */}
-              {item.subItems &&
+              {/* Mobile submenu (outside parent li) */}
+              {isMobile &&
+                item.subItems &&
                 item.subItems.length > 0 &&
                 activeSubMenu === item.value && (
                   <ul
                     style={{
-                      position: isMobile ? "static" : "absolute",
-                      top: isMobile ? "0" : "-10px",
-                      left: isMobile ? "0" : "100%",
-                      marginLeft: isMobile ? "0" : "1px",
-                      backgroundColor: isMobile ? "rgba(0,0,0,0.05)" : "white",
+                      position: "static",
+                      backgroundColor: "rgba(0,0,0,0.05)",
                       listStyle: "none",
-                      padding: isMobile ? "0 0 0 30px" : "10px 0", 
+                      padding: "0 0 0 30px",
                       margin: 0,
-                      boxShadow: isMobile
-                        ? "none"
-                        : "0 4px 8px rgba(0, 0, 0, 0.1)",
-                      borderRadius: isMobile ? "0" : "8px",
-                      zIndex: 1000,
-                      minWidth: isMobile ? "100%" : "200px",
-                      width: isMobile ? "100%" : "auto",
+                      minWidth: "100%",
+                      width: "100%",
                     }}
                   >
                     {item.subItems.map((subItem) => (
