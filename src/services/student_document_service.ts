@@ -1,13 +1,71 @@
-import { StudentDocument } from "../model/student_document";
+import { StudentDocumentResponse, StudentDocument } from "../model/student_document";
+import { ApiResponse } from "../model/api_respone";
+import { AxiosInstance } from "axios";
 
-export const getStudentDocuments = (): Promise<{ data: StudentDocument[] }> => {
-  return new Promise((resolve) => {
-    // Mock data based on backup.sql for Student ID 1
-    // Registered Courses:
-    // 1. Khóa IELTS Vocabulary (Course ID 5) -> Modules 33-40
-    // 2. Khóa IELTS Reading (Course ID 4) -> Modules 25-32
+/**
+ * Lấy tài liệu của học viên từ API
+ * @param axiosPrivate - Axios instance đã được cấu hình với authentication
+ */
+export const getStudentDocuments = async (
+  axiosPrivate: AxiosInstance
+): Promise<StudentDocumentResponse[]> => {
+  try {
+    const response = await axiosPrivate.get<ApiResponse<StudentDocumentResponse[]>>(
+      "/students/documents"
+    );
 
-    const mockData: StudentDocument[] = [
+    if (response.data && response.data.code === 1000 && response.data.data) {
+      return response.data.data;
+    } else {
+      return [];
+    }
+  } catch (error: any) {
+    console.error("Đọc lấy danh sách tài liệu:", error);
+    throw error;
+  }
+};
+
+/**
+ * Chuyển đổi dữ liệu từ API response sang format hiển thị
+ */
+export const transformDocumentsForDisplay = (
+  apiData: StudentDocumentResponse[]
+): StudentDocument[] => {
+  const flatDocuments: StudentDocument[] = [];
+
+  apiData.forEach((courseDoc) => {
+    courseDoc.documents.forEach((doc) => {
+      // Xác định loại tài liệu dựa trên extension
+      let loai: 'PDF' | 'VIDEO' | 'AUDIO' | 'OTHER' = 'OTHER';
+      const fileName = doc.fileName.toLowerCase();
+      
+      if (fileName.endsWith('.pdf')) {
+        loai = 'PDF';
+      } else if (fileName.match(/\.(mp4|avi|mov|mkv|webm)$/)) {
+        loai = 'VIDEO';
+      } else if (fileName.match(/\.(mp3|wav|aac|flac)$/)) {
+        loai = 'AUDIO';
+      }
+
+      flatDocuments.push({
+        id: doc.documentId,
+        tenTaiLieu: doc.fileName,
+        moTa: doc.description || '',
+        link: doc.link,
+        loai: loai,
+        tenKhoaHoc: courseDoc.courseName,
+        tenModule: '', // Backend không có thông tin module
+        hinhAnh: doc.image,
+      });
+    });
+  });
+
+  return flatDocuments;
+};
+
+// === CODE CŨ (GIỮT LẠI ĐỂ THAM KHẢO NẾU CẦN) ===
+/*
+const mockData: StudentDocument[] = [
       // Documents for IELTS Reading (Course 4)
       // Module 25: Module 1: Giới thiệu Passage 1
       {
@@ -74,9 +132,4 @@ export const getStudentDocuments = (): Promise<{ data: StudentDocument[] }> => {
         tenModule: "Module 1: Từ vựng chủ đề Environment"
       }
     ];
-
-    setTimeout(() => {
-      resolve({ data: mockData });
-    }, 500);
-  });
-};
+*/

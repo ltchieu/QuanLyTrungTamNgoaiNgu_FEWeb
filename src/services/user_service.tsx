@@ -21,8 +21,12 @@ export const getNameAndEmail = async (client: AxiosInstance): Promise<NameAndEma
 export const getStudentInfo = async (client: AxiosInstance): Promise<StudentInfoResponse> => {
   try {
     const response = await client.get<ApiResponse<StudentInfoResponse>>("/students");
-
-    if (response.data && response.data.code === 1000 && response.data.data) {
+    console.log("Response Student Info:", response);
+    if (response.data && response.data.code === 1000) {
+      // Backend có thể trả về null nếu user không phải là STUDENT
+      if (response.data.data === null) {
+        throw new Error("Người dùng không phải là học viên");
+      }
       return response.data.data;
     } else {
       throw new Error(response.data?.message || "Không lấy được thông tin học viên");

@@ -338,6 +338,14 @@ const Header: React.FC = () => {
                       </ListItemIcon>
                       Tài liệu
                     </MenuItem>
+                    <MenuItem
+                      onClick={() => handleNavigate("/student/review-history")}
+                    >
+                      <ListItemIcon>
+                        <RateReview fontSize="small" />
+                      </ListItemIcon>
+                      Lịch sử đánh giá
+                    </MenuItem>
 
 
                     <Divider />

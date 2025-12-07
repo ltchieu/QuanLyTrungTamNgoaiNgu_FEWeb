@@ -1,42 +1,53 @@
-import { CourseEvaluation } from "../model/course_evaluation";
-import { ClassInfo } from "../model/course_model";
+import { CourseEvaluation, ReviewResponse } from "../model/course_evaluation";
+import { ApiResponse } from "../model/api_respone";
+import { AxiosInstance } from "axios";
 
-// Mock storage for evaluations
-let mockEvaluations: CourseEvaluation[] = [
-    {
-        maDanhGia: 1,
-        soSao: 5,
-        nhanXet: "Khóa học rất bổ ích, giảng viên nhiệt tình.",
-        maCTHD: 101,
-        courseId: 1,
-        courseName: "IELTS Foundation",
-        submittedDate: "2023-10-15"
+export const submitEvaluation = async (
+    axiosPrivate: AxiosInstance,
+    data: CourseEvaluation
+): Promise<ReviewResponse> => {
+    try {
+        const response = await axiosPrivate.post<ApiResponse<ReviewResponse>>(
+            "students/reviews",
+            data
+        );
+
+        if (response.data && response.data.code === 1000 && response.data.data) {
+            console.log("Đánh giá đã được gửi thành công");
+            return response.data.data;
+        } else {
+            throw new Error(response.data?.message || "Gửi đánh giá thất bại");
+        }
+    } catch (error: any) {
+        console.error("Lỗi khi gửi đánh giá:", error);
+        throw error;
     }
-];
-
-export const submitEvaluation = async (data: CourseEvaluation): Promise<boolean> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const newEvaluation = {
-                ...data,
-                maDanhGia: Math.floor(Math.random() * 10000),
-                submittedDate: new Date().toISOString().split('T')[0]
-            };
-            mockEvaluations.push(newEvaluation);
-            resolve(true);
-        }, 800);
-    });
 };
 
-export const getStudentEvaluations = async (): Promise<CourseEvaluation[]> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve([...mockEvaluations]);
-        }, 500);
-    });
+
+export const getStudentEvaluations = async (
+    axiosPrivate: AxiosInstance
+): Promise<ReviewResponse[]> => {
+    try {
+        const response = await axiosPrivate.get<ApiResponse<ReviewResponse[]>>(
+            "students/reviews/student"
+        );
+
+        if (response.data && response.data.code === 1000 && response.data.data) {
+            return response.data.data;
+        } else {
+            return [];
+        }
+    } catch (error: any) {
+        console.error("Lỗi khi lấy danh sách đánh giá:", error);
+        return [];
+    }
 };
 
-// Helper to check if a course (invoice detail) is already evaluated
-export const isCourseEvaluated = (evaluations: CourseEvaluation[], maCTHD: number): CourseEvaluation | undefined => {
-    return evaluations.find(e => e.maCTHD === maCTHD);
+
+export const isCourseEvaluated = (
+    evaluations: ReviewResponse[],
+    classId: number
+): ReviewResponse | undefined => {
+    return evaluations.find(e => e.classId === classId);
 };

@@ -468,7 +468,18 @@ const Login = () => {
               justifyContent="center"
               sx={{ mt: 2 }}
             >
-              <Link href="#" variant="body2" sx={{ my: 2, mx: 2 }}>
+              <Link 
+                onClick={() => navigate("/forgot-password")}
+                variant="body2" 
+                sx={{ 
+                  my: 2, 
+                  mx: 2,
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: "primary.main",
+                  }
+                }}
+              >
                 Forgot password?
               </Link>
               <Button

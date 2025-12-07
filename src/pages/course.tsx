@@ -19,6 +19,10 @@ import {
   Paper,
   Radio,
   Stack,
+  Alert,
+  AlertTitle,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
 import CourseModuleDetails from "../componets/course_content_detail";
@@ -182,52 +186,145 @@ function Course() {
             padding: "10px",
           }}
         >
-          <Typography
-            variant="h4"
+          {/* Category Badge */}
+          <Chip
+            label={course.category}
             sx={{
-              color: "#414040ff",
+              bgcolor: "#003E83",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "14px",
+              height: 32,
+              mt: 2,
+            }}
+          />
+
+          <Typography
+            variant="h3"
+            sx={{
+              color: "#003E83",
               textAlign: "left",
               mt: 2,
               fontWeight: "bold",
+              lineHeight: 1.3,
             }}
           >
-            {course.category} - {course.courseName}
+            {course.courseName}
           </Typography>
 
           <Typography
             variant="body1"
-            sx={{ color: "#414040ff", textAlign: "left", mt: 2 }}
+            sx={{
+              color: "#414040ff",
+              textAlign: "left",
+              mt: 2,
+              fontSize: "16px",
+              lineHeight: 1.8,
+            }}
           >
             {course.description}
           </Typography>
 
-          {/* Hiển thị số lượng học viên */}
+          {/* Course Info Grid */}
           <Box
-            {...rowContainterProps}
-            sx={{ alignItems: "center", mt: 2, justifyContent: "flex-start" }}
+            sx={{
+              mt: 3,
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
+              gap: 2,
+            }}
           >
-            <FontAwesomeIcon icon={faMedal} style={{ color: "#FD3F00" }} />
-            <Typography variant="body1" sx={{ ml: 1 }}>
-              Level: {course.level}
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                p: 2,
+                bgcolor: "#f8f9fa",
+                borderRadius: 2,
+                border: "1px solid #e0e0e0",
+              }}
+            >
+              <FontAwesomeIcon
+                icon={faMedal}
+                style={{ color: "#FF4500", fontSize: "20px" }}
+              />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                >
+                  Đầu vào
+                </Typography>
+                <Typography variant="body1" fontWeight="600">
+                  {course.entryLevel}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                p: 2,
+                bgcolor: "#f8f9fa",
+                borderRadius: 2,
+                border: "1px solid #e0e0e0",
+              }}
+            >
+              <FontAwesomeIcon
+                icon={faMedal}
+                style={{ color: "#FF4500", fontSize: "20px" }}
+              />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                >
+                  Đầu ra
+                </Typography>
+                <Typography variant="body1" fontWeight="600">
+                  {course.targetLevel}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
-          <Box>
-            <Typography variant="h5" sx={{ ...headerTextStyle, mt: 10 }}>
-              Bạn sẽ đạt được gì sau {course.courseName}
+          <Box sx={{ mt: 8 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                ...headerTextStyle,
+                color: "#003E83",
+                fontSize: "28px",
+                mb: 1,
+              }}
+            >
+              Bạn sẽ đạt được gì sau khóa học
             </Typography>
+            <Box
+              sx={{
+                width: 60,
+                height: 4,
+                bgcolor: "#FF4500",
+                borderRadius: 2,
+              }}
+            />
           </Box>
 
           {/* Mục tiêu đầu ra của khóa học */}
           <Box
             sx={{
-              border: "solid",
-              borderWidth: 1,
-              borderColor: "#A2A2A2",
-              boxShadow: "0px 0px 0px 0px rgba(0,0,0,0.5)",
-              borderRadius: "15px",
-              mt: 2,
+              border: "2px solid",
+              borderColor: "#e0e0e0",
+              boxShadow: "0px 2px 8px rgba(0,0,0,0.08)",
+              borderRadius: "12px",
+              mt: 3,
               width: "100%",
+              bgcolor: "#fafafa",
             }}
           >
             <Box {...rowContainterProps} padding="10px">
@@ -257,28 +354,101 @@ function Course() {
           </Box>
 
           {/* Nội dung khóa học*/}
-          <Box sx={{ textAlign: "left", mt: 7, mb: 3 }}>
-            <Typography variant="h5" sx={{ fontSize: 25, fontWeight: "bold" }}>
+          <Box sx={{ textAlign: "left", mt: 8, mb: 3 }}>
+            <Typography
+              variant="h4"
+              sx={{ fontSize: 28, fontWeight: "bold", color: "#003E83", mb: 1 }}
+            >
               Nội dung chương trình học
             </Typography>
+            <Box
+              sx={{
+                width: 60,
+                height: 4,
+                bgcolor: "#FF4500",
+                borderRadius: 2,
+                mb: 2,
+              }}
+            />
 
-            <Typography
-              variant="body1"
-              sx={{ mt: 2, color: "rgb(44 43 43 / 78%)" }}
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                bgcolor: "#fff3e0",
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                border: "1px solid #FF4500",
+              }}
             >
-              <span>{course.studyHours}</span>h giờ học trên lớp
-            </Typography>
+              <FontAwesomeIcon
+                icon={faClock}
+                style={{ color: "#FF4500" }}
+              />
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: "600", color: "#FF4500" }}
+              >
+                {course.studyHours} giờ học trên lớp
+              </Typography>
+            </Box>
           </Box>
 
           <Box>
-            {course && <CourseModuleDetails modules={course.modules} />}
+            {course.skillModules && course.skillModules.length > 0 ? (
+              <Stack spacing={3}>
+                {course.skillModules.map((skillGroup) => (
+                  <Box key={skillGroup.skillId}>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: "bold",
+                        color: "#003E83",
+                        mb: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          bgcolor: "#FF4500",
+                        }}
+                      />
+                      {skillGroup.skillName}
+                    </Typography>
+                    <CourseModuleDetails modules={skillGroup.modules} />
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              course.modules && <CourseModuleDetails modules={course.modules} />
+            )}
           </Box>
 
           {/* --- DANH SÁCH LỚP HỌC--- */}
-          <Box sx={{ mt: 5 }}>
-            <Typography variant="h5" sx={{ fontSize: 25, fontWeight: "bold", mb: 2 }}>
+          <Box sx={{ mt: 8 }}>
+            <Typography
+              variant="h4"
+              sx={{ fontSize: 28, fontWeight: "bold", color: "#003E83", mb: 1 }}
+            >
               Lịch khai giảng
             </Typography>
+            <Box
+              sx={{
+                width: 60,
+                height: 4,
+                bgcolor: "#FF4500",
+                borderRadius: 2,
+                mb: 3,
+              }}
+            />
             <Box sx={{ pr: 0.5 }}>
               {course.classInfos && course.classInfos.length > 0 ? (
                 <RadioGroup
@@ -523,6 +693,79 @@ function Course() {
               )}
             </Box>
 
+            {/* Combo Promotions */}
+            {course.comboPromotions && course.comboPromotions.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <Alert
+                  severity="success"
+                  icon={false}
+                  sx={{
+                    bgcolor: "#fff3e0",
+                    border: "2px solid #FF4500",
+                    borderRadius: 2,
+                    "& .MuiAlert-message": {
+                      width: "100%",
+                    },
+                  }}
+                >
+                  <AlertTitle
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#FF4500",
+                      fontSize: "16px",
+                      mb: 1,
+                    }}
+                  >
+                    🎁 KHUYẾN MÃI ĐẶC BIỆT
+                  </AlertTitle>
+                  <Stack spacing={1.5}>
+                    {course.comboPromotions.map((combo, index) => (
+                      <Card
+                        key={index}
+                        sx={{
+                          bgcolor: "white",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        }}
+                      >
+                        <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              fontWeight: "bold",
+                              color: "#003E83",
+                              mb: 1,
+                            }}
+                          >
+                            {combo.comboName}
+                          </Typography>
+                          <Chip
+                            label={`Giảm ${combo.discountPercent}%`}
+                            size="small"
+                            sx={{
+                              bgcolor: "#FF4500",
+                              color: "white",
+                              fontWeight: "bold",
+                              mb: 1,
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 1 }}
+                          >
+                            Đăng ký kèm:{" "}
+                            <strong>
+                              {combo.requiredCourseNames.join(", ")}
+                            </strong>
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                </Alert>
+              </Box>
+            )}
+
             <Divider sx={{ my: 2 }}>
               <Chip
                 label="LỊCH KHAI GIẢNG"
@@ -531,8 +774,6 @@ function Course() {
                 sx={{ fontWeight: "bold" }}
               />
             </Divider>
-
-
 
             {/* Button đăng ký khóa học */}
             <Box sx={{ mt: 3 }}>

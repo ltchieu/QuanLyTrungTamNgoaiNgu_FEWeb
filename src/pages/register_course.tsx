@@ -38,6 +38,8 @@ import {
   faChalkboardTeacher,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { CartPreviewResponse, CartPreviewRequest } from "../model/cart_model";
+import { previewCart } from "../services/cart_service";
 
 interface PaymentMethod {
   maPhuongThuc: string;
@@ -62,24 +64,7 @@ const getPaymentMethods = (): Promise<{ data: PaymentMethod[] }> => {
   });
 };
 
-// 5. API mới để lấy khuyến mãi
-const getDiscount = (
-  courseIds: string[]
-): Promise<{ data: { discountAmount: number; description: string } }> => {
-  return new Promise((resolve) => {
-    let discountAmount = 0;
-    let description = "Không có khuyến mãi";
-    if (
-      courseIds.includes("1") &&
-      courseIds.includes("2") &&
-      courseIds.length === 2
-    ) {
-      discountAmount = 1500000; // Giảm 1.5 triệu
-      description = "Combo Writing + Speaking";
-    }
-    resolve({ data: { discountAmount, description } });
-  });
-};
+
 
 // 6. API để submit đăng ký
 const submitRegistration = (formData: any): Promise<any> => {
@@ -116,10 +101,9 @@ const RegisterPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<string>("");
   const [expandedCourseId, setExpandedCourseId] = useState<string | false>(false);
 
-  // Tính toán giá
-  const [originalPrice, setOriginalPrice] = useState(0);
-  const [discount, setDiscount] = useState({ amount: 0, description: "" });
-  const [finalPrice, setFinalPrice] = useState(0);
+  // Tính toán giá - sử dụng CartPreviewResponse
+  const [cartPreview, setCartPreview] = useState<CartPreviewResponse | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   // --- Effects ---
   useEffect(() => {
@@ -195,18 +179,33 @@ const RegisterPage: React.FC = () => {
       );
 
       // Remove details for courses that are no longer selected
-      setCourseDetails((prev) =>
-        prev.filter((c) => selectedCourses.includes(String(c.courseId)))
+      const filteredDetails = courseDetails.filter((c) => 
+        selectedCourses.includes(String(c.courseId))
       );
 
-      if (newCourseIds.length === 0) return;
+      // If no new courses to fetch, just update with filtered list to avoid duplicates
+      if (newCourseIds.length === 0) {
+        // Only update if the filtered list is different
+        if (filteredDetails.length !== courseDetails.length) {
+          setCourseDetails(filteredDetails);
+        }
+        return;
+      }
 
       try {
         const responses = await Promise.all(
           newCourseIds.map((id) => getCourseDetail(id))
         );
         const newDetails = responses.map((res) => res.data.data);
-        setCourseDetails((prev) => [...prev, ...newDetails]);
+        
+        // Combine filtered existing details with new details, ensuring no duplicates
+        const combinedDetails = [...filteredDetails, ...newDetails];
+        const uniqueDetails = combinedDetails.filter(
+          (course, index, self) =>
+            index === self.findIndex((c) => c.courseId === course.courseId)
+        );
+        
+        setCourseDetails(uniqueDetails);
 
         // Auto expand the first new course if nothing is expanded
         if (!expandedCourseId && newDetails.length > 0) {
@@ -239,32 +238,37 @@ const RegisterPage: React.FC = () => {
     }
   }, [initialClassIdParam, courseDetails]);
 
-  // 2. Tính lại giá tiền và khuyến mãi khi thay đổi lựa chọn
+  // 2. Tính lại giá tiền và khuyến mãi khi thay đổi lựa chọn lớp học
   useEffect(() => {
-    if (!categoryDetail) return;
+    const fetchCartPreview = async () => {
+      // Get all selected class IDs
+      const selectedClassIds = Object.values(selectedClasses).filter(
+        (id) => id !== undefined && id !== null
+      ) as number[];
 
-    const selectedCourseObjects = categoryDetail.courses.filter((course) =>
-      selectedCourses.includes(String(course.courseId))
-    );
+      // If no classes selected, reset preview
+      if (selectedClassIds.length === 0) {
+        setCartPreview(null);
+        return;
+      }
 
-    const newOriginalPrice = selectedCourseObjects.reduce(
-      (sum, course) => sum + course.tuitionFee,
-      0
-    );
-    setOriginalPrice(newOriginalPrice);
-
-    // Gọi API để check khuyến mãi
-    const checkDiscount = async () => {
-      const { data } = await getDiscount(selectedCourses);
-      setDiscount({
-        amount: data.discountAmount,
-        description: data.description,
-      });
-      setFinalPrice(newOriginalPrice - data.discountAmount);
+      setLoadingPreview(true);
+      try {
+        const request: CartPreviewRequest = {
+          courseClassIds: selectedClassIds,
+        };
+        const preview = await previewCart(axiosPrivate, request);
+        setCartPreview(preview);
+      } catch (error) {
+        console.error("Error fetching cart preview:", error);
+        setCartPreview(null);
+      } finally {
+        setLoadingPreview(false);
+      }
     };
 
-    checkDiscount();
-  }, [selectedCourses, categoryDetail]);
+    fetchCartPreview();
+  }, [selectedClasses, axiosPrivate]);
 
   // --- Handlers ---
   // Removed handleFormChange as form is no longer used
@@ -320,7 +324,7 @@ const RegisterPage: React.FC = () => {
       email: studentInfo.email,
       soDienThoai: studentInfo.phoneNumber,
       maPhuongThuc: selectedPayment,
-      tongTien: finalPrice,
+      tongTien: cartPreview?.summary.finalAmount || 0,
       courseIds: selectedCourses,
       classIds: Object.values(selectedClasses),
     };
@@ -693,31 +697,142 @@ const RegisterPage: React.FC = () => {
               <Divider sx={{ my: 2 }} />
 
               {/* Tính tiền*/}
-              <List dense>
-                <ListItem disableGutters>
-                  <ListItemText primary="Tổng tiền" />
-                  <Typography variant="subtitle1">
-                    {originalPrice.toLocaleString("vi-VN")} đ
+              {loadingPreview ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                  <CircularProgress size={30} />
+                </Box>
+              ) : cartPreview ? (
+                <List dense>
+                  {/* Chi tiết từng khóa học - chỉ hiển thị các khóa được chọn */}
+                  {cartPreview.items
+                    .filter((item) => {
+                      // Check if this item's class is in selectedClasses
+                      return Object.values(selectedClasses).includes(item.courseClassId);
+                    })
+                    .map((item) => (
+                      <ListItem key={item.courseClassId} disableGutters>
+                        <ListItemText
+                          primary={
+                            <Typography variant="body2" color="text.secondary">
+                              {item.courseName} - {item.className}
+                            </Typography>
+                          }
+                        />
+                        <Typography variant="body2">
+                          {item.finalPrice.toLocaleString("vi-VN")} đ
+                        </Typography>
+                      </ListItem>
+                    ))}
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Tổng tiền gốc */}
+                  <ListItem disableGutters>
+                    <ListItemText primary="Tổng tiền gốc" />
+                    <Typography variant="subtitle1">
+                      {cartPreview.summary.totalOriginalPrice.toLocaleString(
+                        "vi-VN"
+                      )}{" "}
+                      đ
+                    </Typography>
+                  </ListItem>
+
+                  {/* Khuyến mãi combo */}
+                  {cartPreview.summary.appliedCombos &&
+                    cartPreview.summary.appliedCombos.length > 0 && (
+                      <>
+                        {cartPreview.summary.appliedCombos.map(
+                          (combo, index) => (
+                            <ListItem
+                              key={index}
+                              disableGutters
+                              sx={{ color: "green" }}
+                            >
+                              <ListItemText
+                                primary={
+                                  <Box>
+                                    <Typography variant="body2" color="green">
+                                      {combo.comboName} (-{combo.discountPercent}
+                                      %)
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                    >
+                                      {combo.courseNames.join(", ")}
+                                    </Typography>
+                                  </Box>
+                                }
+                              />
+                              <Typography variant="body2" color="green">
+                                -{" "}
+                                {combo.discountAmount.toLocaleString("vi-VN")}{" "}
+                                đ
+                              </Typography>
+                            </ListItem>
+                          )
+                        )}
+                      </>
+                    )}
+
+                  {/* Khuyến mãi học viên cũ */}
+                  {cartPreview.summary.returningDiscountAmount > 0 && (
+                    <ListItem disableGutters sx={{ color: "green" }}>
+                      <ListItemText primary="Giảm giá học viên cũ" />
+                      <Typography variant="body2" color="green">
+                        -{" "}
+                        {cartPreview.summary.returningDiscountAmount.toLocaleString(
+                          "vi-VN"
+                        )}{" "}
+                        đ
+                      </Typography>
+                    </ListItem>
+                  )}
+
+                  {/* Tổng giảm giá */}
+                  {cartPreview.summary.totalDiscountAmount > 0 && (
+                    <ListItem disableGutters sx={{ color: "green" }}>
+                      <ListItemText
+                        primary={
+                          <Typography fontWeight="600" color="green">
+                            Tổng giảm giá
+                          </Typography>
+                        }
+                      />
+                      <Typography variant="subtitle1" color="green" fontWeight="600">
+                        -{" "}
+                        {cartPreview.summary.totalDiscountAmount.toLocaleString(
+                          "vi-VN"
+                        )}{" "}
+                        đ
+                      </Typography>
+                    </ListItem>
+                  )}
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Thành tiền */}
+                  <ListItem disableGutters>
+                    <ListItemText
+                      primary={
+                        <Typography variant="h6" fontWeight="bold">
+                          Thành tiền
+                        </Typography>
+                      }
+                    />
+                    <Typography variant="h6" fontWeight="bold" color="primary">
+                      {cartPreview.summary.finalAmount.toLocaleString("vi-VN")}{" "}
+                      đ
+                    </Typography>
+                  </ListItem>
+                </List>
+              ) : (
+                <Box sx={{ textAlign: "center", py: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Chọn lớp học để xem giá
                   </Typography>
-                </ListItem>
-                <ListItem disableGutters sx={{ color: "green" }}>
-                  <ListItemText
-                    primary={`Khuyến mãi (${discount.description})`}
-                  />
-                  <Typography variant="subtitle1">
-                    - {discount.amount.toLocaleString("vi-VN")} đ
-                  </Typography>
-                </ListItem>
-                <ListItem disableGutters>
-                  <ListItemText
-                    primary="Thành tiền"
-                    sx={{ fontWeight: "bold" }}
-                  />
-                  <Typography variant="h6" fontWeight="bold">
-                    {finalPrice.toLocaleString("vi-VN")} đ
-                  </Typography>
-                </ListItem>
-              </List>
+                </Box>
+              )}
 
               {/* Nút Submit */}
               <Button
@@ -726,7 +841,12 @@ const RegisterPage: React.FC = () => {
                 color="primary"
                 size="large"
                 fullWidth
-                disabled={submitting || selectedCourses.length === 0}
+                disabled={
+                  submitting ||
+                  selectedCourses.length === 0 ||
+                  Object.keys(selectedClasses).length === 0 ||
+                  !cartPreview
+                }
                 sx={{ mt: 2, py: 1.5 }}
               >
                 {submitting ? (

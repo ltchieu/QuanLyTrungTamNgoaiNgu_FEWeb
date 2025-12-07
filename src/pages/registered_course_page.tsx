@@ -29,7 +29,7 @@ import {
   RateReview,
 } from "@mui/icons-material";
 import { ClassInfo } from "../model/course_model";
-import { CourseEvaluation } from "../model/course_evaluation";
+import { CourseEvaluation, ReviewResponse } from "../model/course_evaluation";
 import { getRegisteredCourses } from "../services/registered_course_service";
 import {
   submitEvaluation,
@@ -40,7 +40,7 @@ import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 const RegisteredCoursePage: React.FC = () => {
   const [courses, setCourses] = useState<ClassInfo[]>([]);
-  const [evaluations, setEvaluations] = useState<CourseEvaluation[]>([]);
+  const [evaluations, setEvaluations] = useState<ReviewResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const axiosPrivate = useAxiosPrivate();
 
@@ -62,17 +62,20 @@ const RegisteredCoursePage: React.FC = () => {
         setLoading(true);
         const [coursesRes, evaluationsRes] = await Promise.all([
           getRegisteredCourses(axiosPrivate),
-          getStudentEvaluations(),
+          getStudentEvaluations(axiosPrivate),
         ]);
 
-        if (Array.isArray(coursesRes.data)) {
-          setCourses(coursesRes.data);
+        // Response có cấu trúc: { classes: [], currentPage, totalPages, totalItems }
+        if (coursesRes.data && Array.isArray(coursesRes.data.classes)) {
+          setCourses(coursesRes.data.classes);
         } else {
           console.warn("Unexpected response format", coursesRes);
+          setCourses([]);
         }
         setEvaluations(evaluationsRes);
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        setCourses([]);
       } finally {
         setLoading(false);
       }
@@ -99,14 +102,12 @@ const RegisteredCoursePage: React.FC = () => {
     setSubmitting(true);
     try {
       const evaluationData: CourseEvaluation = {
-        soSao: rating,
-        nhanXet: comment,
-        maCTHD: selectedCourse.classId,
-        courseId: 0,
-        courseName: selectedCourse.courseName,
+        classId: selectedCourse.classId,
+        rating: rating,
+        comment: comment || undefined, // Chỉ gửi comment nếu có nội dung
       };
 
-      await submitEvaluation(evaluationData);
+      await submitEvaluation(axiosPrivate, evaluationData);
 
       setSnackbarMessage("Cảm ơn bạn đã gửi đánh giá!");
       setSnackbarSeverity("success");
@@ -114,11 +115,12 @@ const RegisteredCoursePage: React.FC = () => {
       handleCloseDialog();
 
       // Refresh evaluations
-      const newEvaluations = await getStudentEvaluations();
+      const newEvaluations = await getStudentEvaluations(axiosPrivate);
       setEvaluations(newEvaluations);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting evaluation:", error);
-      setSnackbarMessage("Có lỗi xảy ra, vui lòng thử lại.");
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.";
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -281,7 +283,12 @@ const RegisteredCoursePage: React.FC = () => {
                               Đã đánh giá
                             </Typography>
                           </Box>
-                          <Rating value={evaluation.soSao} readOnly size="small" />
+                          <Rating value={evaluation.rating} readOnly size="small" />
+                          {evaluation.comment && (
+                            <Typography variant="body2" color="text.secondary" mt={1} sx={{ fontStyle: 'italic' }}>
+                              "{evaluation.comment}"
+                            </Typography>
+                          )}
                         </Box>
                       ) : (
                         <Button

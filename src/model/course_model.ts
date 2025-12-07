@@ -32,21 +32,40 @@ export interface Module {
   documents: Document[];
 }
 
+export interface SkillModuleGroup {
+  skillId: number;
+  skillName: string;
+  modules: Module[];
+}
+
+export interface ComboPromotionInfo {
+  comboName: string;
+  discountPercent: number;
+  requiredCourseNames: string[];
+}
+
 //Toàn bộ khóa học
 export interface CourseModel {
   courseId: number;
   courseName: string;
   studyHours: number;
   tuitionFee: number;
-  numberOfSessions: number;
+  promotionPrice?: number;
+  numberOfSessions?: number;
   video: string;
+  status: boolean;
   description: string;
+  entryLevel: string;
+  targetLevel: string;
+  image: string;
+  courseCategoryId: number;
   category: string;
   level: string;
-  promotionPrice: number;
   objectives: Objective[];
-  modules: Module[];
+  modules?: Module[];
+  skillModules: SkillModuleGroup[];
   classInfos: ClassInfo[];
+  comboPromotions?: ComboPromotionInfo[];
 }
 
 export interface CourseResponse {

@@ -49,7 +49,6 @@ const ManageAccountPage: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Gọi service, truyền axiosPrivate để có token
         const data = await getStudentInfo(axiosPrivate);
         setStudentInfo(data);
       } catch (err: any) {

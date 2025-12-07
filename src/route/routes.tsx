@@ -9,8 +9,11 @@ import WeeklySchedule from "../pages/schedule";
 import ManageAccountPage from "../pages/profile_page";
 import RegisteredCoursePage from "../pages/registered_course_page";
 import StudentDocumentPage from "../pages/student_document_page";
+import ReviewHistoryPage from "../pages/review_history_page";
 import PersistLogin from "../componets/persist_login";
 import RequireAuth from "../model/require_auth";
+import ForgotPasswordPage from "../pages/forgot_password_page";
+import ResetPasswordPage from "../pages/reset_password_page";
 
 
 
@@ -19,6 +22,8 @@ function AppRoutes() {
     <div>
       <Routes>
         <Route path="/login" element={<Login />}></Route>
+        <Route path="/forgot-password" element={<ForgotPasswordPage />}></Route>
+        <Route path="/reset-password" element={<ResetPasswordPage />}></Route>
         <Route element={<PersistLogin />}>
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />}></Route>
@@ -39,6 +44,10 @@ function AppRoutes() {
               <Route
                 path="/student/documents"
                 element={<StudentDocumentPage />}
+              ></Route>
+              <Route
+                path="/student/review-history"
+                element={<ReviewHistoryPage />}
               ></Route>
               <Route
                 path="/account/profile"

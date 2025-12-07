@@ -27,28 +27,33 @@ import {
   Download,
 } from "@mui/icons-material";
 import { StudentDocument } from "../model/student_document";
-import { getStudentDocuments } from "../services/student_document_service";
+import { getStudentDocuments, transformDocumentsForDisplay } from "../services/student_document_service";
+import useAxiosPrivate from "../hook/useAxiosPrivate";
 
 const StudentDocumentPage: React.FC = () => {
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("All");
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await getStudentDocuments();
-        setDocuments(response.data);
+        const apiResponse = await getStudentDocuments(axiosPrivate);
+        // Transform API response thành format hiển thị
+        const transformedDocs = transformDocumentsForDisplay(apiResponse);
+        setDocuments(transformedDocs);
       } catch (error) {
         console.error("Failed to fetch documents:", error);
+        setDocuments([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDocuments();
-  }, []);
+  }, [axiosPrivate]);
 
   const uniqueCourses = useMemo(() => {
     const courses = new Set(documents.map((doc) => doc.tenKhoaHoc));
