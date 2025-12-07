@@ -109,7 +109,7 @@ const PaymentResultPage: React.FC = () => {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => navigate('/registered-courses')}
+                onClick={() => navigate('/student/registered-courses')}
                 startIcon={<Receipt />}
               >
                 Xem khóa học của tôi

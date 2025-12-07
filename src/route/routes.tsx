@@ -34,7 +34,7 @@ function AppRoutes() {
 
             <Route element={<RequireAuth />}>
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/payment-result" element={<PaymentResultPage />} />
+              <Route path="/payment/result" element={<PaymentResultPage />} />
               <Route
                 path="/student/schedule"
                 element={<WeeklySchedule />}
