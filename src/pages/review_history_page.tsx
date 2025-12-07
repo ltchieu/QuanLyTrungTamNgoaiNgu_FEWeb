@@ -17,6 +17,7 @@ import {
   CalendarToday,
   School,
   BookmarkBorder,
+  Star,
 } from "@mui/icons-material";
 import { ReviewResponse } from "../model/course_evaluation";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
@@ -185,17 +186,51 @@ const ReviewHistoryPage: React.FC = () => {
                         <Divider sx={{ my: 2 }} />
 
                         {/* Rating */}
-                        <Box display="flex" alignItems="center" gap={2} mb={2}>
-                          <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                        <Box mb={2}>
+                          <Typography variant="body2" color="text.secondary" fontWeight="medium" mb={1.5}>
                             Đánh giá của bạn:
                           </Typography>
-                          <Rating value={review.rating} readOnly size="medium" />
-                          <Chip
-                            label={`${review.rating}/5`}
-                            size="small"
-                            color="primary"
-                            sx={{ fontWeight: "bold" }}
-                          />
+                          <Box display="flex" flexDirection="column" gap={1}>
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 140 }}>
+                                Giảng viên:
+                              </Typography>
+                              <Rating value={review.teacherRating} readOnly size="small" />
+                              <Chip
+                                label={`${review.teacherRating}/5`}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                sx={{ fontWeight: "bold" }}
+                              />
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 140 }}>
+                                Cơ sở vật chất:
+                              </Typography>
+                              <Rating value={review.facilityRating} readOnly size="small" />
+                              <Chip
+                                label={`${review.facilityRating}/5`}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                sx={{ fontWeight: "bold" }}
+                              />
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 140 }}>
+                                Hài lòng chung:
+                              </Typography>
+                              <Rating value={review.overallRating} readOnly size="small" />
+                              <Chip
+                                label={`${review.overallRating}/5`}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                sx={{ fontWeight: "bold" }}
+                              />
+                            </Box>
+                          </Box>
                         </Box>
 
                         {/* Comment */}
@@ -253,12 +288,32 @@ const ReviewHistoryPage: React.FC = () => {
           <Typography variant="h6" color="primary.main" fontWeight="bold">
             Tổng số đánh giá: {reviews.length}
           </Typography>
-          <Typography variant="body2" color="text.secondary" mt={1}>
-            Trung bình:{" "}
-            <strong>
-              {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)}/5 ⭐
-            </strong>
-          </Typography>
+          <Box display="flex" justifyContent="center" gap={4} mt={2} flexWrap="wrap">
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                TB Giảng viên:
+              </Typography>
+              <Typography variant="body1" fontWeight="bold" color="primary.main">
+                {(reviews.reduce((sum, r) => sum + r.teacherRating, 0) / reviews.length).toFixed(1)}/5 <Star sx={{ fontSize: 16, color: "#ffa000", ml: 0.5 }} />
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                TB Cơ sở vật chất:
+              </Typography>
+              <Typography variant="body1" fontWeight="bold" color="primary.main">
+                {(reviews.reduce((sum, r) => sum + r.facilityRating, 0) / reviews.length).toFixed(1)}/5 <Star sx={{ fontSize: 16, color: "#ffa000", ml: 0.5 }} />
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                TB Hài lòng chung:
+              </Typography>
+              <Typography variant="body1" fontWeight="bold" color="primary.main">
+                {(reviews.reduce((sum, r) => sum + r.overallRating, 0) / reviews.length).toFixed(1)}/5 <Star sx={{ fontSize: 16, color: "#ffa000", ml: 0.5 }} />
+              </Typography>
+            </Box>
+          </Box>
         </Box>
       )}
     </Container>

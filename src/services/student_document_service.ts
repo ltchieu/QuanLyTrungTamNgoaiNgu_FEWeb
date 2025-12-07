@@ -1,23 +1,41 @@
-import { StudentDocumentResponse, StudentDocument } from "../model/student_document";
+import { PaginatedDocumentResponse, DocumentItem, StudentDocument } from "../model/student_document";
 import { ApiResponse } from "../model/api_respone";
 import { AxiosInstance } from "axios";
 
 /**
- * Lấy tài liệu của học viên từ API
+ * Lấy tài liệu của học viên từ API với tìm kiếm và phân trang
  * @param axiosPrivate - Axios instance đã được cấu hình với authentication
+ * @param courseId - ID khóa học để lọc (optional)
+ * @param keyword - Từ khóa tìm kiếm (optional)
+ * @param page - Số trang (mặc định 1)
+ * @param size - Số lượng tài liệu mỗi trang (mặc định 10)
  */
 export const getStudentDocuments = async (
-  axiosPrivate: AxiosInstance
-): Promise<StudentDocumentResponse[]> => {
+  axiosPrivate: AxiosInstance,
+  courseId?: number,
+  keyword?: string,
+  page: number = 1,
+  size: number = 100
+): Promise<PaginatedDocumentResponse> => {
   try {
-    const response = await axiosPrivate.get<ApiResponse<StudentDocumentResponse[]>>(
-      "/students/documents"
+    const params: any = { page, size };
+    if (courseId) params.courseId = courseId;
+    if (keyword) params.keyword = keyword;
+
+    const response = await axiosPrivate.get<ApiResponse<PaginatedDocumentResponse>>(
+      "/students/documents/search",
+      { params }
     );
 
     if (response.data && response.data.code === 1000 && response.data.data) {
       return response.data.data;
     } else {
-      return [];
+      return {
+        documents: [],
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0
+      };
     }
   } catch (error: any) {
     console.error("Đọc lấy danh sách tài liệu:", error);
@@ -29,38 +47,32 @@ export const getStudentDocuments = async (
  * Chuyển đổi dữ liệu từ API response sang format hiển thị
  */
 export const transformDocumentsForDisplay = (
-  apiData: StudentDocumentResponse[]
+  documents: DocumentItem[]
 ): StudentDocument[] => {
-  const flatDocuments: StudentDocument[] = [];
+  return documents.map((doc) => {
+    // Xác định loại tài liệu dựa trên extension
+    let loai: 'PDF' | 'VIDEO' | 'AUDIO' | 'OTHER' = 'OTHER';
+    const fileName = doc.fileName.toLowerCase();
+    
+    if (fileName.endsWith('.pdf')) {
+      loai = 'PDF';
+    } else if (fileName.match(/\.(mp4|avi|mov|mkv|webm)$/)) {
+      loai = 'VIDEO';
+    } else if (fileName.match(/\.(mp3|wav|aac|flac)$/)) {
+      loai = 'AUDIO';
+    }
 
-  apiData.forEach((courseDoc) => {
-    courseDoc.documents.forEach((doc) => {
-      // Xác định loại tài liệu dựa trên extension
-      let loai: 'PDF' | 'VIDEO' | 'AUDIO' | 'OTHER' = 'OTHER';
-      const fileName = doc.fileName.toLowerCase();
-      
-      if (fileName.endsWith('.pdf')) {
-        loai = 'PDF';
-      } else if (fileName.match(/\.(mp4|avi|mov|mkv|webm)$/)) {
-        loai = 'VIDEO';
-      } else if (fileName.match(/\.(mp3|wav|aac|flac)$/)) {
-        loai = 'AUDIO';
-      }
-
-      flatDocuments.push({
-        id: doc.documentId,
-        tenTaiLieu: doc.fileName,
-        moTa: doc.description || '',
-        link: doc.link,
-        loai: loai,
-        tenKhoaHoc: courseDoc.courseName,
-        tenModule: '', // Backend không có thông tin module
-        hinhAnh: doc.image,
-      });
-    });
+    return {
+      id: doc.documentId,
+      tenTaiLieu: doc.fileName,
+      moTa: doc.description || '',
+      link: doc.link,
+      loai: loai,
+      tenKhoaHoc: doc.courseName,
+      tenModule: doc.moduleName || '',
+      hinhAnh: doc.image,
+    };
   });
-
-  return flatDocuments;
 };
 
 // === CODE CŨ (GIỮT LẠI ĐỂ THAM KHẢO NẾU CẦN) ===

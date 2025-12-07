@@ -116,6 +116,7 @@ export interface CourseGroupResponse {
 export interface ClassInfo {
   classId: number;
   className: string;
+  courseId: number;
   courseName: string;
   roomName: string;
   instructorName: string;
@@ -124,7 +125,7 @@ export interface ClassInfo {
   startTime: string;
   endTime: string | null;
   schedulePattern: string;
-  status: string | boolean; // Allow both for compatibility
+  status: string | boolean;
   maxCapacity: number | null;
   currentEnrollment: number | null;
 }

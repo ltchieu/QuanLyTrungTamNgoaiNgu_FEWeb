@@ -1,4 +1,24 @@
-// Response từ backend API GET /students/documents
+// Response từ backend API GET /students/documents/search
+export interface PaginatedDocumentResponse {
+  documents: DocumentItem[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+}
+
+export interface DocumentItem {
+  documentId: number;
+  fileName: string;
+  link: string;
+  description?: string;
+  image?: string;
+  courseId: number;
+  courseName: string;
+  moduleId?: number;
+  moduleName?: string;
+}
+
+// Deprecated - keeping for reference
 export interface StudentDocumentResponse {
   courseId: number;
   courseName: string;
@@ -13,7 +33,6 @@ export interface DocumentInfo {
   image?: string;
 }
 
-// Interface cũ để hiển thị (flatten từ API response)
 export interface StudentDocument {
   id: number;
   tenTaiLieu: string;

@@ -38,8 +38,12 @@ const ManageAccountPage: React.FC = () => {
   const [studentInfo, setStudentInfo] = useState<StudentInfoResponse | null>(
     null
   );
+  const [originalInfo, setOriginalInfo] = useState<StudentInfoResponse | null>(
+    null
+  );
 
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -51,6 +55,7 @@ const ManageAccountPage: React.FC = () => {
       try {
         const data = await getStudentInfo(axiosPrivate);
         setStudentInfo(data);
+        setOriginalInfo(data); // Lưu bản sao gốc
       } catch (err: any) {
         console.error(err);
         setError("Không thể tải thông tin tài khoản. Vui lòng thử lại sau.");
@@ -65,9 +70,10 @@ const ManageAccountPage: React.FC = () => {
   }, [auth?.accessToken, axiosPrivate]);
 
   const handleEditToggle = () => {
-    if (isEditing) {
-      // Reset changes if canceling (optional, currently just toggles)
-      // To implement reset, we'd need a separate state for original data
+    if (isEditing && originalInfo) {
+      // Reset về dữ liệu gốc khi hủy
+      setStudentInfo({ ...originalInfo });
+      setError(null);
     }
     setIsEditing(!isEditing);
   };
@@ -80,13 +86,33 @@ const ManageAccountPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!studentInfo) return;
+
+    // Validation
+    if (!studentInfo.name.trim()) {
+      setError("Họ và tên không được để trống");
+      return;
+    }
+    if (!studentInfo.phoneNumber.trim()) {
+      setError("Số điện thoại không được để trống");
+      return;
+    }
+    if (!/^[0-9]{10,11}$/.test(studentInfo.phoneNumber)) {
+      setError("Số điện thoại không hợp lệ (10-11 số)");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
     try {
       await updateStudentInfo(axiosPrivate, studentInfo);
+      setOriginalInfo({ ...studentInfo }); // Cập nhật bản gốc
       setSuccessMessage("Cập nhật thông tin thành công!");
       setIsEditing(false);
     } catch (err: any) {
       console.error(err);
-      setError("Cập nhật thất bại. Vui lòng thử lại.");
+      setError(err.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -101,23 +127,18 @@ const ManageAccountPage: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
+
 
   if (!studentInfo) return null;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Success Message */}
       <Snackbar
         open={!!successMessage}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={() => setSuccessMessage(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={() => setSuccessMessage(null)}
@@ -127,6 +148,17 @@ const ManageAccountPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
+
+      {/* Error Message */}
+      {error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          onClose={() => setError(null)}
+        >
+          {error}
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
         {/* === CỘT TRÁI: AVATAR & TÀI KHOẢN === */}
@@ -316,8 +348,10 @@ const ManageAccountPage: React.FC = () => {
                       variant="contained"
                       size="large"
                       onClick={handleSave}
+                      disabled={saving}
+                      startIcon={saving ? <CircularProgress size={20} /> : null}
                     >
-                      Lưu thay đổi
+                      {saving ? "Đang lưu..." : "Lưu thay đổi"}
                     </Button>
                   </Grid>
                 )}

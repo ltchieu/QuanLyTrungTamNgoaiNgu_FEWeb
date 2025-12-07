@@ -30,7 +30,7 @@ export const getStudentEvaluations = async (
 ): Promise<ReviewResponse[]> => {
     try {
         const response = await axiosPrivate.get<ApiResponse<ReviewResponse[]>>(
-            "students/reviews/student"
+            "students/reviews"
         );
 
         if (response.data && response.data.code === 1000 && response.data.data) {

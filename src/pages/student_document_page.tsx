@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   Container,
   Typography,
@@ -16,6 +16,7 @@ import {
   Button,
   Chip,
   Divider,
+  Pagination,
 } from "@mui/material";
 import {
   Search,
@@ -28,22 +29,63 @@ import {
 } from "@mui/icons-material";
 import { StudentDocument } from "../model/student_document";
 import { getStudentDocuments, transformDocumentsForDisplay } from "../services/student_document_service";
+import { getRegisteredCourses } from "../services/registered_course_service";
+import { ClassInfo } from "../model/course_model";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
+import useDebounce from "../hook/useDebounce";
 
 const StudentDocumentPage: React.FC = () => {
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("All");
+  const [selectedCourseId, setSelectedCourseId] = useState<number | undefined>(undefined);
+  const [courses, setCourses] = useState<ClassInfo[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const pageSize = 12;
+  
   const axiosPrivate = useAxiosPrivate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Use custom useDebounce hook
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  // Fetch registered courses for filter dropdown
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await getRegisteredCourses(axiosPrivate);
+        if (response.data && response.data.classes) {
+          setCourses(response.data.classes);
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, [axiosPrivate]);
+
+  // Fetch documents with filters and pagination
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const apiResponse = await getStudentDocuments(axiosPrivate);
-        // Transform API response thành format hiển thị
-        const transformedDocs = transformDocumentsForDisplay(apiResponse);
+        setLoading(true);
+        const response = await getStudentDocuments(
+          axiosPrivate,
+          selectedCourseId,
+          debouncedSearchTerm || undefined,
+          currentPage,
+          pageSize
+        );
+        
+        const transformedDocs = transformDocumentsForDisplay(response.documents);
         setDocuments(transformedDocs);
+        setTotalPages(response.totalPages);
+        setTotalItems(response.totalItems);
       } catch (error) {
         console.error("Failed to fetch documents:", error);
         setDocuments([]);
@@ -53,23 +95,41 @@ const StudentDocumentPage: React.FC = () => {
     };
 
     fetchDocuments();
-  }, [axiosPrivate]);
+  }, [axiosPrivate, selectedCourseId, debouncedSearchTerm, currentPage]);
 
+  // Focus search input after loading completes
+  useEffect(() => {
+    if (!loading && searchTerm && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [loading, searchTerm]);
+
+  // Extract unique courses from registered classes
   const uniqueCourses = useMemo(() => {
-    const courses = new Set(documents.map((doc) => doc.tenKhoaHoc));
-    return ["All", ...Array.from(courses)];
-  }, [documents]);
-
-  const filteredDocuments = useMemo(() => {
-    return documents.filter((doc) => {
-      const matchesSearch =
-        doc.tenTaiLieu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.tenModule.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCourse =
-        selectedCourse === "All" || doc.tenKhoaHoc === selectedCourse;
-      return matchesSearch && matchesCourse;
+    const courseMap = new Map<number, string>();
+    courses.forEach((classInfo) => {
+      if (!courseMap.has(classInfo.courseId)) {
+        courseMap.set(classInfo.courseId, classInfo.courseName);
+      }
     });
-  }, [documents, searchTerm, selectedCourse]);
+    return Array.from(courseMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [courses]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleCourseChange = (e: any) => {
+    const value = e.target.value;
+    setSelectedCourseId(value === "All" ? undefined : value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getIconByType = (type: string) => {
     switch (type) {
@@ -118,9 +178,10 @@ const StudentDocumentPage: React.FC = () => {
           <Grid size={{ xs: 12, md: 8 }}>
             <TextField
               fullWidth
-              placeholder="Tìm kiếm tài liệu..."
+              placeholder="Tìm kiếm theo tên tài liệu..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
+              inputRef={searchInputRef}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -137,8 +198,8 @@ const StudentDocumentPage: React.FC = () => {
               <InputLabel id="course-filter-label">Lọc theo khóa học</InputLabel>
               <Select
                 labelId="course-filter-label"
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
+                value={selectedCourseId ?? "All"}
+                onChange={handleCourseChange}
                 label="Lọc theo khóa học"
                 sx={{ bgcolor: "white", borderRadius: 2 }}
                 startAdornment={
@@ -147,9 +208,10 @@ const StudentDocumentPage: React.FC = () => {
                   </InputAdornment>
                 }
               >
+                <MenuItem value="All">Tất cả khóa học</MenuItem>
                 {uniqueCourses.map((course) => (
-                  <MenuItem key={course} value={course}>
-                    {course === "All" ? "Tất cả khóa học" : course}
+                  <MenuItem key={course.id} value={course.id}>
+                    {course.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -158,7 +220,7 @@ const StudentDocumentPage: React.FC = () => {
         </Grid>
       </Card>
 
-      {filteredDocuments.length === 0 ? (
+      {documents.length === 0 ? (
         <Box textAlign="center" py={5}>
           <Description sx={{ fontSize: 60, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
@@ -166,8 +228,9 @@ const StudentDocumentPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
+        <>
         <Grid container spacing={3}>
-          {filteredDocuments.map((doc) => (
+          {documents.map((doc) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc.id}>
               <Card
                 elevation={2}
@@ -264,6 +327,31 @@ const StudentDocumentPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" mt={5}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        )}
+        </>
+      )}
+      
+      {/* Summary */}
+      {totalItems > 0 && (
+        <Box mt={4} textAlign="center">
+          <Typography variant="body2" color="text.secondary">
+            Hiển thị {documents.length} / {totalItems} tài liệu
+          </Typography>
+        </Box>
       )}
     </Container>
   );

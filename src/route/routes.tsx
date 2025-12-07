@@ -10,6 +10,7 @@ import ManageAccountPage from "../pages/profile_page";
 import RegisteredCoursePage from "../pages/registered_course_page";
 import StudentDocumentPage from "../pages/student_document_page";
 import ReviewHistoryPage from "../pages/review_history_page";
+import PaymentResultPage from "../pages/payment_result_page";
 import PersistLogin from "../componets/persist_login";
 import RequireAuth from "../model/require_auth";
 import ForgotPasswordPage from "../pages/forgot_password_page";
@@ -33,6 +34,7 @@ function AppRoutes() {
 
             <Route element={<RequireAuth />}>
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/payment-result" element={<PaymentResultPage />} />
               <Route
                 path="/student/schedule"
                 element={<WeeklySchedule />}

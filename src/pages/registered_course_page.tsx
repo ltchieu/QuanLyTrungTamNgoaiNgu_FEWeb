@@ -47,7 +47,9 @@ const RegisteredCoursePage: React.FC = () => {
   // Dialog State
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<ClassInfo | null>(null);
-  const [rating, setRating] = useState<number | null>(5);
+  const [teacherRating, setTeacherRating] = useState<number | null>(5);
+  const [facilityRating, setFacilityRating] = useState<number | null>(5);
+  const [overallRating, setOverallRating] = useState<number | null>(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,8 +66,6 @@ const RegisteredCoursePage: React.FC = () => {
           getRegisteredCourses(axiosPrivate),
           getStudentEvaluations(axiosPrivate),
         ]);
-
-        // Response có cấu trúc: { classes: [], currentPage, totalPages, totalItems }
         if (coursesRes.data && Array.isArray(coursesRes.data.classes)) {
           setCourses(coursesRes.data.classes);
         } else {
@@ -86,7 +86,9 @@ const RegisteredCoursePage: React.FC = () => {
 
   const handleOpenEvaluation = (course: ClassInfo) => {
     setSelectedCourse(course);
-    setRating(5);
+    setTeacherRating(5);
+    setFacilityRating(5);
+    setOverallRating(5);
     setComment("");
     setOpenDialog(true);
   };
@@ -97,13 +99,15 @@ const RegisteredCoursePage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedCourse || !rating) return;
+    if (!selectedCourse || !teacherRating || !facilityRating || !overallRating) return;
 
     setSubmitting(true);
     try {
       const evaluationData: CourseEvaluation = {
         classId: selectedCourse.classId,
-        rating: rating,
+        teacherRating: teacherRating,
+        facilityRating: facilityRating,
+        overallRating: overallRating,
         comment: comment || undefined, // Chỉ gửi comment nếu có nội dung
       };
 
@@ -283,7 +287,20 @@ const RegisteredCoursePage: React.FC = () => {
                               Đã đánh giá
                             </Typography>
                           </Box>
-                          <Rating value={evaluation.rating} readOnly size="small" />
+                          <Box display="flex" flexDirection="column" gap={0.5}>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>Giảng viên:</Typography>
+                              <Rating value={evaluation.teacherRating} readOnly size="small" />
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>Cơ sở vật chất:</Typography>
+                              <Rating value={evaluation.facilityRating} readOnly size="small" />
+                            </Box>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>Hài lòng chung:</Typography>
+                              <Rating value={evaluation.overallRating} readOnly size="small" />
+                            </Box>
+                          </Box>
                           {evaluation.comment && (
                             <Typography variant="body2" color="text.secondary" mt={1} sx={{ fontStyle: 'italic' }}>
                               "{evaluation.comment}"
@@ -321,16 +338,42 @@ const RegisteredCoursePage: React.FC = () => {
                 {selectedCourse.courseName} - {selectedCourse.className}
               </Typography>
 
-              <Box display="flex" flexDirection="column" alignItems="center" my={3}>
-                <Typography component="legend">Chất lượng khóa học</Typography>
-                <Rating
-                  name="simple-controlled"
-                  value={rating}
-                  onChange={(event, newValue) => {
-                    setRating(newValue);
-                  }}
-                  size="large"
-                />
+              <Box display="flex" flexDirection="column" gap={3} my={3}>
+                <Box>
+                  <Typography component="legend" fontWeight="medium" mb={1}>Đánh giá giảng viên *</Typography>
+                  <Rating
+                    name="teacher-rating"
+                    value={teacherRating}
+                    onChange={(event, newValue) => {
+                      setTeacherRating(newValue);
+                    }}
+                    size="large"
+                  />
+                </Box>
+
+                <Box>
+                  <Typography component="legend" fontWeight="medium" mb={1}>Đánh giá cơ sở vật chất *</Typography>
+                  <Rating
+                    name="facility-rating"
+                    value={facilityRating}
+                    onChange={(event, newValue) => {
+                      setFacilityRating(newValue);
+                    }}
+                    size="large"
+                  />
+                </Box>
+
+                <Box>
+                  <Typography component="legend" fontWeight="medium" mb={1}>Đánh giá hài lòng chung *</Typography>
+                  <Rating
+                    name="overall-rating"
+                    value={overallRating}
+                    onChange={(event, newValue) => {
+                      setOverallRating(newValue);
+                    }}
+                    size="large"
+                  />
+                </Box>
               </Box>
 
               <TextField
@@ -352,7 +395,7 @@ const RegisteredCoursePage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="inherit">Hủy</Button>
-          <Button onClick={handleSubmit} variant="contained" disabled={submitting || !rating}>
+          <Button onClick={handleSubmit} variant="contained" disabled={submitting || !teacherRating || !facilityRating || !overallRating}>
             {submitting ? <CircularProgress size={24} /> : "Gửi đánh giá"}
           </Button>
         </DialogActions>

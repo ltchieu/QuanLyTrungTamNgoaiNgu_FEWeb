@@ -320,16 +320,8 @@ const Header: React.FC = () => {
                       <ListItemIcon>
                         <AppRegistrationIcon fontSize="small" />
                       </ListItemIcon>
-                      Khóa học đã đăng ký
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => handleNavigate("/student/active-courses")}
-                    >
-                      <ListItemIcon>
-                        <FontAwesomeIcon icon={faSchool} />
-                      </ListItemIcon>
-                      Khóa đang học
-                    </MenuItem>
+                      Lớp học đã đăng ký
+                    </MenuItem>                  
                     <MenuItem
                       onClick={() => handleNavigate("/student/documents")}
                     >

@@ -6,6 +6,8 @@ import {
   faClock,
   faChalkboardTeacher,
   faDoorOpen,
+  faGift,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -52,7 +54,7 @@ function Course() {
       try {
         const res = await getCourseDetail(id);
         setCourse(res.data.data);
-        // Reset chọn lớp khi load khóa học mới
+        console.log("Course detail:", res.data.data);
         setSelectedClassId(null);
       } catch (error) {
         console.error("Lỗi khi tải khóa học:", error);
@@ -432,171 +434,7 @@ function Course() {
             )}
           </Box>
 
-          {/* --- DANH SÁCH LỚP HỌC--- */}
-          <Box sx={{ mt: 8 }}>
-            <Typography
-              variant="h4"
-              sx={{ fontSize: 28, fontWeight: "bold", color: "#003E83", mb: 1 }}
-            >
-              Lịch khai giảng
-            </Typography>
-            <Box
-              sx={{
-                width: 60,
-                height: 4,
-                bgcolor: "#FF4500",
-                borderRadius: 2,
-                mb: 3,
-              }}
-            />
-            <Box sx={{ pr: 0.5 }}>
-              {course.classInfos && course.classInfos.length > 0 ? (
-                <RadioGroup
-                  value={selectedClassId}
-                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
-                >
-                  <Stack spacing={2}>
-                    {course.classInfos.map((cls) => (
-                      <Paper
-                        key={cls.classId}
-                        variant="outlined"
-                        sx={{
-                          p: 2,
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                          borderColor:
-                            selectedClassId === cls.classId
-                              ? "#FF4500"
-                              : "#e0e0e0",
-                          backgroundColor:
-                            selectedClassId === cls.classId
-                              ? "#fff5f2"
-                              : "white",
-                          "&:hover": {
-                            borderColor: "#FF4500",
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                          },
-                          position: "relative",
-                        }}
-                        onClick={() => setSelectedClassId(cls.classId)}
-                      >
-                        <Box display="flex" alignItems="flex-start">
-                          <Radio
-                            value={cls.classId}
-                            size="small"
-                            sx={{
-                              mt: -0.5,
-                              ml: -1,
-                              color: "#FF4500",
-                              "&.Mui-checked": { color: "#FF4500" },
-                            }}
-                          />
-                          <Box flex={1}>
-                            <Typography
-                              variant="subtitle1"
-                              fontWeight="bold"
-                              color="#003E83"
-                              sx={{ lineHeight: 1.3, mb: 1 }}
-                            >
-                              {cls.className}
-                            </Typography>
 
-                            <Stack direction={{ xs: "column", sm: "row" }} spacing={3} flexWrap="wrap">
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faCalendarAlt}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  KG:{" "}
-                                  {new Date(cls.startDate).toLocaleDateString(
-                                    "vi-VN"
-                                  )}
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faClock}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  {cls.schedulePattern} (
-                                  {cls.startTime.slice(0, 5)} -{" "}
-                                  {cls.endTime?.slice(0, 5)})
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faChalkboardTeacher}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  GV: {cls.instructorName}
-                                </Typography>
-                              </Stack>
-
-                              <Stack
-                                direction="row"
-                                alignItems="center"
-                                gap={1}
-                              >
-                                <FontAwesomeIcon
-                                  icon={faDoorOpen}
-                                  style={{ width: 14, color: "#666" }}
-                                />
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  {cls.roomName}
-                                </Typography>
-                              </Stack>
-                            </Stack>
-                          </Box>
-                        </Box>
-                      </Paper>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              ) : (
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    py: 2,
-                    bgcolor: "#f5f5f5",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Hiện chưa có lịch khai giảng.
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Box>
         </Box>
 
         {/* Second column (Sidebar) */}
@@ -714,9 +552,13 @@ function Course() {
                       color: "#FF4500",
                       fontSize: "16px",
                       mb: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
                     }}
                   >
-                    🎁 KHUYẾN MÃI ĐẶC BIỆT
+                    <FontAwesomeIcon icon={faGift} />
+                    KHUYẾN MÃI ĐẶC BIỆT
                   </AlertTitle>
                   <Stack spacing={1.5}>
                     {course.comboPromotions.map((combo, index) => (
@@ -775,13 +617,193 @@ function Course() {
               />
             </Divider>
 
+            {/* Class Schedule List */}
+            <Box sx={{ mb: 3, maxHeight: 400, overflowY: "auto" }}>
+              {course.classInfos && course.classInfos.length > 0 ? (
+                <RadioGroup
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(Number(e.target.value))}
+                >
+                  <Stack spacing={1.5}>
+                    {course.classInfos.map((cls) => {
+                      const isFull =
+                        cls.maxCapacity &&
+                        cls.currentEnrollment &&
+                        cls.currentEnrollment >= cls.maxCapacity;
+                      const isSelected = selectedClassId === cls.classId;
+
+                      return (
+                        <Paper
+                          key={cls.classId}
+                          variant="outlined"
+                          sx={{
+                            p: 1.5,
+                            cursor: isFull ? "not-allowed" : "pointer",
+                            transition: "all 0.2s",
+                            borderColor: isFull
+                              ? "#ccc"
+                              : isSelected
+                              ? "#FF4500"
+                              : "#e0e0e0",
+                            backgroundColor: isFull
+                              ? "#f5f5f5"
+                              : isSelected
+                              ? "#fff5f2"
+                              : "white",
+                            opacity: isFull ? 0.6 : 1,
+                            "&:hover": !isFull
+                              ? {
+                                  borderColor: "#FF4500",
+                                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                                }
+                              : {},
+                          }}
+                          onClick={() => !isFull && setSelectedClassId(cls.classId)}
+                        >
+                          <Box display="flex" alignItems="flex-start" gap={1}>
+                            <Radio
+                              value={cls.classId}
+                              disabled={!!isFull}
+                              size="small"
+                              sx={{
+                                mt: -0.5,
+                                p: 0.5,
+                                color: "#FF4500",
+                                "&.Mui-checked": { color: "#FF4500" },
+                              }}
+                            />
+                            <Box flex={1}>
+                              <Box
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="flex-start"
+                                mb={0.5}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  fontWeight="bold"
+                                  color={isFull ? "text.disabled" : "#003E83"}
+                                  sx={{ lineHeight: 1.3 }}
+                                >
+                                  {cls.className}
+                                </Typography>
+                                {isFull && (
+                                  <Chip
+                                    label="Đầy"
+                                    size="small"
+                                    color="error"
+                                    sx={{ height: 20, fontSize: "0.7rem" }}
+                                  />
+                                )}
+                              </Box>
+
+                              <Stack spacing={0.5}>
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <FontAwesomeIcon
+                                    icon={faCalendarAlt}
+                                    style={{ width: 12, color: "#666" }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    KG: {new Date(cls.startDate).toLocaleDateString("vi-VN")}
+                                  </Typography>
+                                </Box>
+
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <FontAwesomeIcon
+                                    icon={faClock}
+                                    style={{ width: 12, color: "#666" }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {cls.schedulePattern} ({cls.startTime.slice(0, 5)} -{" "}
+                                    {cls.endTime?.slice(0, 5)})
+                                  </Typography>
+                                </Box>
+
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <FontAwesomeIcon
+                                    icon={faChalkboardTeacher}
+                                    style={{ width: 12, color: "#666" }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    GV: {cls.instructorName}
+                                  </Typography>
+                                </Box>
+
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <FontAwesomeIcon
+                                    icon={faDoorOpen}
+                                    style={{ width: 12, color: "#666" }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    Phòng: {cls.roomName}
+                                  </Typography>
+                                </Box>
+
+                                {/* Capacity Display */}
+                                <Box
+                                  display="flex"
+                                  alignItems="center"
+                                  gap={0.5}
+                                  mt={0.5}
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faUsers}
+                                    style={{
+                                      width: 12,
+                                      color: isFull ? "#d32f2f" : "#2e7d32",
+                                    }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    fontWeight="600"
+                                    color={isFull ? "error.main" : "success.main"}
+                                  >
+                                    Số lượng: {cls.currentEnrollment || 0}/
+                                    {cls.maxCapacity || "N/A"}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      );
+                    })}
+                  </Stack>
+                </RadioGroup>
+              ) : (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 2,
+                    bgcolor: "#f5f5f5",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Hiện chưa có lịch khai giảng.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
             {/* Button đăng ký khóa học */}
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ mt: 2 }}>
               <Button
                 fullWidth
                 variant="contained"
-                // Disable nếu chưa chọn lớp
-                disabled={!selectedClassId}
+                // Disable nếu chưa chọn lớp hoặc lớp đầy
+                disabled={
+                  !selectedClassId ||
+                  (() => {
+                    const selectedClass = course.classInfos.find(
+                      (cls) => cls.classId === selectedClassId
+                    );
+                    if (!selectedClass) return true;
+                    const current = selectedClass.currentEnrollment || 0;
+                    const max = selectedClass.maxCapacity || 0;
+                    return max > 0 && current >= max;
+                  })()
+                }
                 sx={{
                   backgroundColor: "#FF4500",
                   color: "white",

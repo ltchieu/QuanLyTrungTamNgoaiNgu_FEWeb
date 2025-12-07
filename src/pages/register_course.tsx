@@ -36,10 +36,15 @@ import {
   faCalendarAlt,
   faClock,
   faChalkboardTeacher,
+  faExclamationTriangle,
+  faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CartPreviewResponse, CartPreviewRequest } from "../model/cart_model";
 import { previewCart } from "../services/cart_service";
+import { Invoice, OrderRequest } from "../model/order_model";
+import { createOrder, createPaymentUrl } from "../services/order_service";
+import InvoiceModal from "../componets/invoice_modal";
 
 interface PaymentMethod {
   maPhuongThuc: string;
@@ -66,13 +71,7 @@ const getPaymentMethods = (): Promise<{ data: PaymentMethod[] }> => {
 
 
 
-// 6. API để submit đăng ký
-const submitRegistration = (formData: any): Promise<any> => {
-  console.log("Submitting:", formData);
-  return new Promise((resolve) =>
-    setTimeout(() => resolve({ success: true }), 1000)
-  );
-};
+
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -104,6 +103,11 @@ const RegisterPage: React.FC = () => {
   // Tính toán giá - sử dụng CartPreviewResponse
   const [cartPreview, setCartPreview] = useState<CartPreviewResponse | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+
+  // Invoice modal state
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   // --- Effects ---
   useEffect(() => {
@@ -318,23 +322,55 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
-    // Tạo DTO gửi đi
-    const registrationData = {
-      hoTen: studentInfo.name,
-      email: studentInfo.email,
-      soDienThoai: studentInfo.phoneNumber,
-      maPhuongThuc: selectedPayment,
-      tongTien: cartPreview?.summary.finalAmount || 0,
-      courseIds: selectedCourses,
+    // Get payment method ID
+    // Note: Check with backend for correct mapping
+    // Common mappings: CASH = 1, VNPAY = 2 OR VNPAY = 1, CASH = 2
+    const paymentMethodId = selectedPayment === "VNPAY" ? 2 : 1;
+
+    console.log("Selected Payment Method:", selectedPayment);
+    console.log("Payment Method ID:", paymentMethodId);
+
+    // Tạo order request
+    const orderData: OrderRequest = {
+      studentId: studentInfo.studentId,
       classIds: Object.values(selectedClasses),
+      paymentMethodId: paymentMethodId,
     };
 
     try {
-      await submitRegistration(registrationData);
-      navigate("/thank-you");
-    } catch (err) {
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+      // Call API to create order and get invoice
+      const invoiceData = await createOrder(axiosPrivate, orderData);
+      console.log("Invoice received:", invoiceData);
+      setInvoice(invoiceData);
+      setShowInvoiceModal(true);
       setSubmitting(false);
+    } catch (err: any) {
+      console.error("Error creating order:", err);
+      const errorMessage = err.response?.data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      alert(errorMessage);
+      setSubmitting(false);
+    }
+  };
+
+  // Handle payment
+  const handlePayment = async (invoiceId: number, amount: number) => {
+    setPaying(true);
+    try {
+      const paymentData = {
+        invoiceId: invoiceId,
+        amount: amount.toString(),
+        orderInfo: `Thanh toan hoa don ${invoiceId}`,
+      };
+
+      const paymentResponse = await createPaymentUrl(axiosPrivate, paymentData);
+      
+      // Redirect to VNPay payment page
+      window.location.href = paymentResponse.payUrl;
+    } catch (err: any) {
+      console.error("Error creating payment URL:", err);
+      const errorMessage = err.response?.data?.message || "Không thể tạo link thanh toán. Vui lòng thử lại.";
+      alert(errorMessage);
+      setPaying(false);
     }
   };
 
@@ -436,22 +472,61 @@ const RegisterPage: React.FC = () => {
                   Vui lòng chọn khóa học ở cột bên phải trước.
                 </Typography>
               ) : (
-                <Box display="flex" flexDirection="column" gap={2}>
-                  {courseDetails.map((course) => (
-                    <Accordion
-                      key={course.courseId}
-                      expanded={expandedCourseId === String(course.courseId)}
-                      onChange={(_event, isExpanded) =>
-                        setExpandedCourseId(isExpanded ? String(course.courseId) : false)
-                      }
-                      variant="outlined"
+                <>
+                  {/* Thông báo nếu có khóa chưa chọn lớp */}
+                  {selectedCourses.some((courseId) => !selectedClasses[courseId]) && (
+                    <Box
                       sx={{
-                        borderColor: selectedClasses[course.courseId] ? "#4caf50" : undefined,
-                        "&.Mui-expanded": {
-                          borderColor: "#FF4500",
-                        }
+                        mb: 2,
+                        p: 2,
+                        bgcolor: "#fff3e0",
+                        border: "2px solid #ff9800",
+                        borderRadius: 2,
                       }}
                     >
+                      <Typography variant="body2" color="#e65100" fontWeight="600" display="flex" alignItems="center" gap={1}>
+                        <FontAwesomeIcon icon={faExclamationTriangle} />
+                        Vui lòng chọn lớp học cho tất cả các khóa học đã chọn!
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                        Các khóa chưa chọn lớp sẽ được đánh dấu màu cam bên dưới.
+                      </Typography>
+                    </Box>
+                  )}
+                  <Box display="flex" flexDirection="column" gap={2}>
+                    {courseDetails.map((course) => {
+                      const hasSelectedClass = !!selectedClasses[course.courseId];
+                      const needsAttention = !hasSelectedClass;
+                      
+                      return (
+                        <Accordion
+                          key={course.courseId}
+                          expanded={expandedCourseId === String(course.courseId)}
+                          onChange={(_event, isExpanded) =>
+                            setExpandedCourseId(isExpanded ? String(course.courseId) : false)
+                          }
+                          variant="outlined"
+                          sx={{
+                            borderColor: needsAttention 
+                              ? "#ff9800" 
+                              : hasSelectedClass 
+                              ? "#4caf50" 
+                              : undefined,
+                            borderWidth: needsAttention ? 2 : 1,
+                            "&.Mui-expanded": {
+                              borderColor: needsAttention ? "#ff9800" : "#FF4500",
+                            },
+                            animation: needsAttention ? "pulse 2s ease-in-out infinite" : "none",
+                            "@keyframes pulse": {
+                              "0%, 100%": {
+                                boxShadow: "0 0 0 0 rgba(255, 152, 0, 0.4)",
+                              },
+                              "50%": {
+                                boxShadow: "0 0 0 8px rgba(255, 152, 0, 0)",
+                              },
+                            },
+                          }}
+                        >
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls={`panel-${course.courseId}-content`}
@@ -467,13 +542,25 @@ const RegisterPage: React.FC = () => {
                           <Typography
                             variant="subtitle1"
                             fontWeight="bold"
-                            color={selectedClasses[course.courseId] ? "success.main" : "text.primary"}
+                            color={
+                              needsAttention 
+                                ? "#ff9800" 
+                                : hasSelectedClass 
+                                ? "success.main" 
+                                : "text.primary"
+                            }
                           >
                             {course.courseName}
                           </Typography>
-                          {selectedClasses[course.courseId] && (
-                            <Typography variant="caption" color="success.main" fontWeight="bold">
+                          {hasSelectedClass ? (
+                            <Typography variant="caption" color="success.main" fontWeight="bold" display="flex" alignItems="center" gap={0.5}>
+                              <FontAwesomeIcon icon={faCheckCircle} size="sm" />
                               Đã chọn lớp
+                            </Typography>
+                          ) : (
+                            <Typography variant="caption" color="#ff9800" fontWeight="bold" display="flex" alignItems="center" gap={0.5}>
+                              <FontAwesomeIcon icon={faExclamationTriangle} size="sm" />
+                              Chưa chọn lớp
                             </Typography>
                           )}
                         </Box>
@@ -616,8 +703,10 @@ const RegisterPage: React.FC = () => {
                         )}
                       </AccordionDetails>
                     </Accordion>
-                  ))}
-                </Box>
+                      );
+                    })}
+                  </Box>
+                </>
               )}
             </Paper>
 
@@ -844,21 +933,44 @@ const RegisterPage: React.FC = () => {
                 disabled={
                   submitting ||
                   selectedCourses.length === 0 ||
-                  Object.keys(selectedClasses).length === 0 ||
+                  selectedCourses.some((courseId) => !selectedClasses[courseId]) ||
                   !cartPreview
                 }
                 sx={{ mt: 2, py: 1.5 }}
               >
                 {submitting ? (
                   <CircularProgress size={24} />
+                ) : selectedCourses.some((courseId) => !selectedClasses[courseId]) ? (
+                  "Vui lòng chọn lớp học"
                 ) : (
                   "Hoàn tất đăng ký"
                 )}
               </Button>
+              
+              {/* Thông báo bên dưới nút nếu chưa chọn đủ lớp */}
+              {selectedCourses.length > 0 && 
+               selectedCourses.some((courseId) => !selectedClasses[courseId]) && (
+                <Typography 
+                  variant="caption" 
+                  color="error" 
+                  sx={{ mt: 1, display: "block", textAlign: "center" }}
+                >
+                  Bạn cần chọn lớp học cho tất cả các khóa đã chọn
+                </Typography>
+              )}
             </Paper>
           </Grid>
         </Grid>
       </Box>
+
+      {/* Invoice Modal */}
+      <InvoiceModal
+        open={showInvoiceModal}
+        invoice={invoice}
+        onClose={() => setShowInvoiceModal(false)}
+        onPayment={handlePayment}
+        paying={paying}
+      />
     </Container>
   );
 };
