@@ -31,6 +31,8 @@ import PrintIcon from "@mui/icons-material/Print";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import EventIcon from "@mui/icons-material/Event";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock, faLocationDot, faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
 import { WeeklyScheduleResponse, SessionInfo } from "../model/schedule_model";
 import { getWeeklySchedule } from "../services/schedule_service";
 import useAxiosPrivate from "../hook/useAxiosPrivate";
@@ -41,44 +43,46 @@ interface ScheduleItem {
   title: string;
   date: string;
   timeSlot: "Sáng" | "Chiều" | "Tối";
-  type: ScheduleType;
+  status: SessionStatus;
   details: string;
+  startTime: string;
+  endTime: string;
+  roomName: string;
+  instructorName: string;
 }
 
-type ScheduleType = "Nghe" | "Nói" | "Đọc" | "Viết" | "tamngung";
+type SessionStatus = "Completed" | "Canceled" | "NotCompleted";
 
 // 3. CÁC HẰNG SỐ GIAO DIỆN
 const TIME_SLOTS = ["Sáng", "Chiều", "Tối"];
 
-const LEGEND_ITEMS: { label: string; type: ScheduleType }[] = [
-  { label: "Nghe", type: "Nghe" },
-  { label: "Nói", type: "Nói" },
-  { label: "Đọc", type: "Đọc" },
-  { label: "Viết", type: "Viết" },
-  { label: "Lịch tạm ngưng", type: "tamngung" },
+const LEGEND_ITEMS: { label: string; status: SessionStatus }[] = [
+  { label: "Đã hoàn thành", status: "Completed" },
+  { label: "Đã hủy", status: "Canceled" },
+  { label: "Chưa hoàn thành", status: "NotCompleted" },
 ];
 
-const COLORS: Record<ScheduleType, string> = {
-  Nghe: "#90caf9",
-  Nói: "#a5d6a7",
-  Đọc: "#fff59d",
-  Viết: "#f3f3f3",
-  tamngung: "#ef9a9a",
+const COLORS: Record<SessionStatus, string> = {
+  Completed: "#a5d6a7",      // Green - Completed
+  Canceled: "#ef9a9a",        // Red - Canceled
+  NotCompleted: "#90caf9",    // Blue - Not Completed
 };
 
 const mapSessionToUi = (session: SessionInfo): ScheduleItem => {
-  const getType = (): ScheduleType => {
-    // Ưu tiên 1: Tạm ngưng
-    if (session.status === "Tạm dừng") return "tamngung";
+  const getStatus = (): SessionStatus => {
+    // Map backend status to frontend SessionStatus
+    if (session.status === "Completed") return "Completed";
+    if (session.status === "Canceled") return "Canceled";
+    return "NotCompleted";
+  };
 
-    // Ưu tiên 2: Dựa vào tên khóa học hoặc kỹ năng (nếu có)
-    const lowerName = session.courseName.toLowerCase();
-    if (lowerName.includes("listening") || lowerName.includes("nghe")) return "Nghe";
-    if (lowerName.includes("speaking") || lowerName.includes("nói")) return "Nói";
-    if (lowerName.includes("reading") || lowerName.includes("đọc")) return "Đọc";
-    if (lowerName.includes("writing") || lowerName.includes("viết")) return "Viết";
-
-    return "tamngung";
+  // Calculate end time
+  const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + durationMinutes;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   };
 
   return {
@@ -86,8 +90,12 @@ const mapSessionToUi = (session: SessionInfo): ScheduleItem => {
     title: session.courseName,
     date: session.sessionDate,
     timeSlot: "Sáng", // Will be overridden
-    type: getType(),
+    status: getStatus(),
     details: `${session.roomName} - GV: ${session.instructorName}`,
+    startTime: session.startTime,
+    endTime: calculateEndTime(session.startTime, session.durationMinutes),
+    roomName: session.roomName,
+    instructorName: session.instructorName,
   };
 };
 
@@ -98,15 +106,24 @@ const ScheduleItemCard: React.FC<{ item: ScheduleItem }> = ({ item }) => (
     sx={{
       p: 1,
       mb: 0.5,
-      backgroundColor: COLORS[item.type],
-      borderLeft: `5px solid ${COLORS[item.type]}`,
+      backgroundColor: COLORS[item.status],
+      borderLeft: `5px solid ${COLORS[item.status]}`,
     }}
   >
-    <Typography variant="body2" fontWeight="bold">
+    <Typography variant="body2" fontWeight="bold" sx={{ mb: 0.5 }}>
       {item.title}
     </Typography>
-    <Typography variant="caption" color="text.secondary">
-      {item.details}
+    <Typography variant="caption" display="block" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <FontAwesomeIcon icon={faClock} size="sm" />
+      {item.startTime} - {item.endTime}
+    </Typography>
+    <Typography variant="caption" display="block" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <FontAwesomeIcon icon={faLocationDot} size="sm" />
+      {item.roomName}
+    </Typography>
+    <Typography variant="caption" display="block" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <FontAwesomeIcon icon={faChalkboardTeacher} size="sm" />
+      {item.instructorName}
     </Typography>
   </Paper>
 );
@@ -123,13 +140,13 @@ const ScheduleLegend: React.FC = () => (
       flexWrap="wrap"
       justifyContent="center"
     >
-      {LEGEND_ITEMS.map(({ label, type }) => (
-        <Box key={type} display="flex" alignItems="center" gap={0.5}>
+      {LEGEND_ITEMS.map(({ label, status }) => (
+        <Box key={status} display="flex" alignItems="center" gap={0.5}>
           <Box
             sx={{
               width: 20,
               height: 14,
-              backgroundColor: COLORS[type],
+              backgroundColor: COLORS[status],
               border: "1px solid #ccc",
               borderRadius: "2px",
             }}
@@ -274,12 +291,14 @@ const WeeklySchedule: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Table sx={{ minWidth: 700, borderCollapse: "collapse" }}>
+          <Table sx={{ minWidth: 700, borderCollapse: "collapse", tableLayout: "fixed" }}>
             <TableHead>
               <TableRow>
                 <TableCell
                   sx={{
-                    width: 90,
+                    width: "90px",
+                    minWidth: "90px",
+                    maxWidth: "90px",
                     bgcolor: "#f4f6f8",
                     border: "1px solid #ddd",
                     textAlign: "center",
@@ -292,6 +311,7 @@ const WeeklySchedule: React.FC = () => {
                   <TableCell
                     key={day.toISOString()}
                     sx={{
+                      width: `calc((100% - 90px) / 7)`,
                       bgcolor: "#3949ab",
                       color: "white",
                       border: "1px solid #ddd",
@@ -312,6 +332,9 @@ const WeeklySchedule: React.FC = () => {
                   {/* Cột Ca học */}
                   <TableCell
                     sx={{
+                      width: "90px",
+                      minWidth: "90px",
+                      maxWidth: "90px",
                       bgcolor: "#fffde7",
                       border: "1px solid #ddd",
                       textAlign: "center",
@@ -339,8 +362,9 @@ const WeeklySchedule: React.FC = () => {
                         sx={{
                           border: "1px solid #eee",
                           verticalAlign: "top",
-                          height: 150,
+                          minHeight: 150,
                           p: 0.5,
+                          overflow: "hidden",
                         }}
                       >
                         {items.map((item) => (

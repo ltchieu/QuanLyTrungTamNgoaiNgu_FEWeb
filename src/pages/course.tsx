@@ -468,16 +468,31 @@ function Course() {
                 mb: 2,
               }}
             >
-              <Box
-                component="iframe"
-                width="100%"
-                height="100%"
-                src={course.video.replace("watch?v=", "embed/")}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {course.video ? (
+                <Box
+                  component="iframe"
+                  width="100%"
+                  height="100%"
+                  src={course.video.replace("watch?v=", "embed/")}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <Box
+                  width="100%"
+                  height="100%"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  bgcolor="#f5f5f5"
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Chưa có video giới thiệu
+                  </Typography>
+                </Box>
+              )}
             </Box>
 
             {/* Course name */}
