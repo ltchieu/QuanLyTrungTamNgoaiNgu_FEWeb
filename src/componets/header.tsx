@@ -148,29 +148,6 @@ const Header: React.FC = () => {
     handleMenuClose();
   };
 
-  const blogItems = [
-    {
-      label: "Tự học IELTS",
-      value: "learning",
-      link: "/contact",
-    },
-    {
-      label: "Về IELTS",
-      value: "about_IELTS",
-      link: "/contact",
-    },
-    {
-      label: "Bài mẫu Writing",
-      value: "pattern",
-      link: "/contact",
-    },
-    {
-      label: "Tin tức",
-      value: "news",
-      link: "/contact",
-    },
-  ];
-
   const aboutUsItems = [
     {
       label: "Về chúng tôi",
@@ -242,7 +219,6 @@ const Header: React.FC = () => {
               >
                 Khuyến mãi
               </Button>
-              <DropBox label={"Blog"} items={blogItems}></DropBox>
               <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
             </Box>
             <Box>
@@ -393,11 +369,6 @@ const Header: React.FC = () => {
                 >
                   Khuyến mãi
                 </Button>
-                <DropBox
-                  label={"Blog"}
-                  items={blogItems}
-                  isMobile={isMobile}
-                ></DropBox>
                 <DropBox
                   label={"Về chúng tôi"}
                   items={aboutUsItems}
