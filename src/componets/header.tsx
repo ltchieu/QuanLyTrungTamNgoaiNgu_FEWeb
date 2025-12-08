@@ -27,7 +27,7 @@ import { useAuth } from "../hook/useAuth";
 import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { RateReview } from "@mui/icons-material";
+import { RateReview, LocalOffer } from "@mui/icons-material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { faBook, faSchool } from "@fortawesome/free-solid-svg-icons";
@@ -175,32 +175,17 @@ const Header: React.FC = () => {
     {
       label: "Về chúng tôi",
       value: "about_us",
-      link: "/contact",
+      link: "/about-us",
     },
     {
-      label: "Kết quả học viên",
-      value: "result",
-      link: "/contact",
-    },
-    {
-      label: "Tài liệu học IELTS miễn phí",
-      value: "contact",
-      link: "/contact",
-    },
-    {
-      label: "Workshop",
-      value: "workshop",
-      link: "/contact",
-    },
-    {
-      label: "Lộ trình tự học IELTS",
+      label: "Lộ trình học",
       value: "path",
-      link: "/contact",
+      link: "/learning-roadmap",
     },
     {
-      label: "Quyền lợi học viên IPU",
+      label: "Quyền lợi học viên",
       value: "quyenloi",
-      link: "/contact",
+      link: "/student-benefits",
     },
   ];
 
@@ -251,8 +236,11 @@ const Header: React.FC = () => {
             <Box sx={{ display: "flex", alignItems: "left", gap: 2 }}>
               <DropBox label={"Khóa học"} items={khoaHocItems}></DropBox>
 
-              <Button sx={dropboxProps} onClick={() => { }}>
-                Lịch khai giảng
+              <Button 
+                sx={dropboxProps} 
+                onClick={() => navigate("/promotions")}
+              >
+                Khuyến mãi
               </Button>
               <DropBox label={"Blog"} items={blogItems}></DropBox>
               <DropBox label={"Về chúng tôi"} items={aboutUsItems}></DropBox>
@@ -396,8 +384,14 @@ const Header: React.FC = () => {
                   items={khoaHocItems}
                   isMobile={isMobile}
                 ></DropBox>
-                <Button sx={dropboxProps} onClick={() => { }}>
-                  Lịch khai giảng
+                <Button 
+                  sx={dropboxProps} 
+                  onClick={() => {
+                    navigate("/promotions");
+                    setDrawerOpen(false);
+                  }}
+                >
+                  Khuyến mãi
                 </Button>
                 <DropBox
                   label={"Blog"}

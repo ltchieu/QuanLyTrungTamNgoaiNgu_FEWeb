@@ -11,6 +11,10 @@ import RegisteredCoursePage from "../pages/registered_course_page";
 import StudentDocumentPage from "../pages/student_document_page";
 import ReviewHistoryPage from "../pages/review_history_page";
 import PaymentResultPage from "../pages/payment_result_page";
+import PromotionPage from "../pages/promotion_page";
+import AboutUsPage from "../pages/about_us_page";
+import LearningRoadmapPage from "../pages/learning_roadmap_page";
+import StudentBenefitsPage from "../pages/student_benefits_page";
 import PersistLogin from "../componets/persist_login";
 import RequireAuth from "../model/require_auth";
 import ForgotPasswordPage from "../pages/forgot_password_page";
@@ -31,6 +35,10 @@ function AppRoutes() {
             <Route path="/course" element={<Course />}></Route>
             <Route path="/course/:id" element={<Course />} />
             <Route path="/course/category/:id" element={<CategoryPage />} />
+            <Route path="/promotions" element={<PromotionPage />} />
+            <Route path="/about-us" element={<AboutUsPage />} />
+            <Route path="/learning-roadmap" element={<LearningRoadmapPage />} />
+            <Route path="/student-benefits" element={<StudentBenefitsPage />} />
 
             <Route element={<RequireAuth />}>
               <Route path="/register" element={<RegisterPage />} />
