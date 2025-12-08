@@ -17,6 +17,7 @@ export interface PeriodSchedule {
 
 export interface SessionInfo {
   sessionId: number;
+  classId: number;
   className: string;
   courseName: string;
   roomName: string;
@@ -25,4 +26,6 @@ export interface SessionInfo {
   note: string;
   schedulePattern: string;
   sessionDate: string; // LocalDate
+  startTime: string; // HH:mm format
+  durationMinutes: number;
 }

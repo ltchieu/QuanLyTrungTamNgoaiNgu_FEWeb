@@ -15,8 +15,10 @@ const PersistLogin = () => {
     const verifyRefreshToken = async () => {
       try {
         await refresh();
-      } catch (err) {
-        console.error("Persist login failed:", err);
+      } catch (err: any) {
+        if (err?.response?.status !== 401) {
+          console.error("Persist login failed:", err);
+        }
       } finally {
         isMounted && setIsLoading(false);
       }
