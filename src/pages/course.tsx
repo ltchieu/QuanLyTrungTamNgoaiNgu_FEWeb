@@ -1,4 +1,5 @@
 import "../css/course.css";
+import { formatVietnamDate } from '../utils/datetime';
 import {
   faCircleCheck,
   faMedal,
@@ -719,7 +720,7 @@ function Course() {
                                     style={{ width: 12, color: "#666" }}
                                   />
                                   <Typography variant="caption" color="text.secondary">
-                                    KG: {new Date(cls.startDate).toLocaleDateString("vi-VN")}
+                                    KG: {formatVietnamDate(cls.startDate)}
                                   </Typography>
                                 </Box>
 

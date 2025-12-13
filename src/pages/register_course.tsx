@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { formatVietnamDate } from '../utils/datetime';
 import {
   useSearchParams,
   useNavigate,
@@ -643,9 +644,7 @@ const RegisterPage: React.FC = () => {
                                               color="text.secondary"
                                             >
                                               KG:{" "}
-                                              {new Date(
-                                                cls.startDate
-                                              ).toLocaleDateString("vi-VN")}
+                                              {formatVietnamDate(cls.startDate)}
                                             </Typography>
                                           </Box>
                                           <Box

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getVietnamTime } from '../utils/datetime';
 import {
   Container,
   Typography,
@@ -90,7 +91,7 @@ const PromotionPage: React.FC = () => {
       // Expiring soon (within 7 days)
       filtered = filtered.filter((promo) => {
         const endDate = new Date(promo.endDate);
-        const today = new Date();
+        const today = getVietnamTime();
         const diffDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         return diffDays <= 7 && diffDays > 0;
       });
@@ -111,7 +112,7 @@ const PromotionPage: React.FC = () => {
     const highDiscountCount = promotions.filter((p) => p.discountPercent >= 30).length;
     const expiringSoonCount = promotions.filter((p) => {
       const endDate = new Date(p.endDate);
-      const today = new Date();
+      const today = getVietnamTime();
       const diffDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       return diffDays <= 7 && diffDays > 0;
     }).length;
