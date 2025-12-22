@@ -19,7 +19,6 @@ import {
   Discount,
 } from '@mui/icons-material';
 import { Invoice } from '../model/order_model';
-import { getVietnamTime, getTimeDifferenceInSeconds } from '../utils/datetime';
 
 interface InvoiceModalProps {
   open: boolean;
@@ -47,14 +46,12 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
     }
 
     // Calculate expiry time = dateCreated + 15 minutes
-    // Use Vietnam timezone to ensure consistent calculation
     const createdTime = new Date(invoice.dateCreated);
     const expiryTime = new Date(createdTime.getTime() + 15 * 60 * 1000);
 
     const interval = setInterval(() => {
-      // Use Vietnam time instead of local browser time
-      const now = getVietnamTime();
-      const seconds = getTimeDifferenceInSeconds(expiryTime, now);
+      const now = new Date();
+      const seconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1000);
 
       if (seconds <= 0) {
         setTimeLeft(0);

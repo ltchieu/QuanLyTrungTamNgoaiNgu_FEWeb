@@ -17,7 +17,6 @@ import {
 } from '@mui/icons-material';
 import { PromotionResponse } from '../model/promotion_model';
 import { useNavigate } from 'react-router-dom';
-import { getVietnamTime, formatVietnamDate } from '../utils/datetime';
 
 interface PromotionCardProps {
   promotion: PromotionResponse;
@@ -27,12 +26,16 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
-    return formatVietnamDate(dateString);
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   const getRemainingDays = () => {
     const endDate = new Date(promotion.endDate);
-    const today = getVietnamTime();
+    const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;

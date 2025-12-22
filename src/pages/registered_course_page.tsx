@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";import { formatVietnamDate } from '../utils/datetime';import {
+import React, { useEffect, useState } from "react";
+import {
   Container,
   Typography,
   Box,
@@ -248,7 +249,7 @@ const RegisteredCoursePage: React.FC = () => {
                       <Box display="flex" alignItems="center" gap={1.5}>
                         <CalendarToday color="action" fontSize="small" />
                         <Typography variant="body2" color="text.secondary">
-                          {course.startDate ? formatVietnamDate(course.startDate) : "..."} - {course.endDate ? formatVietnamDate(course.endDate) : "..."}
+                          {course.startDate ? new Date(course.startDate).toLocaleDateString("vi-VN") : "..."} - {course.endDate ? new Date(course.endDate).toLocaleDateString("vi-VN") : "..."}
                         </Typography>
                       </Box>
 

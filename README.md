@@ -1,46 +1,102 @@
-# Getting Started with Create React App
+# Foreign Language Center Management - Student Portal (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📖 Project Overview
 
-## Available Scripts
+**Foreign Language Center Management (Student Portal)** is a modern, responsive web application designed to provide students with a seamless experience in managing their language learning journey. This portal serves as the primary interface for students to discover courses, register for classes, track their schedules, and access learning materials.
 
-In the project directory, you can run:
+Built with **React 19** and **Material UI (MUI)**, the application ensures a high-quality user experience with a polished, professional design and intuitive navigation.
 
-### `npm start`
+## ✨ Key Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+*   **Course Discovery & Registration**:
+    *   Browse a wide range of language courses and categories.
+    *   View detailed course information, schedules, and pricing.
+    *   Seamless course registration and payment processing.
+    *   Access to current promotions and student benefits.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+*   **Student Dashboard**:
+    *   **Personalized Profile**: Manage account details and personal information.
+    *   **Learning Roadmap**: Visual tracking of academic progress and certifications.
+    *   **Weekly Schedule**: View upcoming classes and session details.
+    *   **Registered Courses**: Access list of active and completed courses.
 
-### `npm test`
+*   **Learning Resources**:
+    *   **Student Documents**: Download and view study materials and resources.
+    *   **Review History**: Track past assessments and reviews.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+*   **Authentication & Security**:
+    *   Secure Login and Registration.
+    *   Password recovery (Forgot/Reset Password).
+    *   Session persistence.
 
-### `npm run build`
+## 🛠️ Technology Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+This project uses a modern frontend stack to deliver performance and scalability:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+*   **Core Framework**: [React 19](https://react.dev/) (via Create React App)
+*   **Language**: [TypeScript](https://www.typescriptlang.org/) for type safety and code quality.
+*   **UI Library**: [Material UI (MUI v7)](https://mui.com/) + Emotion for styling.
+*   **Routing**: [React Router DOM v6](https://reactrouter.com/) for client-side routing.
+*   **State Management & API**:
+    *   [Axios](https://axios-http.com/) for REST API communication.
+    *   Context API for global state management.
+*   **Utilities**:
+    *   `date-fns` for robust date manipulation.
+    *   `Swiper` for responsive carousels and sliders.
+    *   `FontAwesome` for iconography.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Getting Started
 
-### `npm run eject`
+Follow these steps to set up the project locally on your machine.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Prerequisites
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+*   [Node.js](https://nodejs.org/) (v16 or higher recommended)
+*   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Installation
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/quan_ly_trung_tam_ngoai_ngu.git
+    cd quan_ly_trung_tam_ngoai_ngu
+    ```
 
-## Learn More
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Running the Application
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1.  **Start the development server:**
+    ```bash
+    npm start
+    ```
+    The app will run in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+2.  **Build for production:**
+    ```bash
+    npm run build
+    ```
+    Builds the app for production to the `build` folder. It correctly bundles React in production mode and optimizes the build for the best performance.
+
+## 📂 Project Structure
+
+```bash
+src/
+├── api/            # API configuration and endpoints
+├── auth/           # Authentication logic and pages
+├── componets/      # Reusable UI components (header, footer, cards, etc.)
+├── context/        # React Context headers (Global state)
+├── css/            # Global styles
+├── hook/           # Custom React hooks
+├── layouts/        # Page layout definitions (MainLayout, etc.)
+├── model/          # TypeScript interfaces and data models
+├── pages/          # Application pages (Home, Course, Profile, etc.)
+├── route/          # Routing configuration
+├── services/       # API service functions
+└── utils/          # Utility functions and helpers
+```
